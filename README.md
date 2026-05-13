@@ -2,11 +2,7 @@
 
 绑定KV 名称：music_kv（必须用这个名字）
 
-初始密码	music2025
-
-修改密码	https://你的项目名.pages.dev/admin
-
-更换 Logo	https://你的项目名.pages.dev/picture
+初始密码	ww1234
 
 你的仓库根目录/
 
@@ -30,11 +26,7 @@
 
 构建设置全部留空（不要填任何命令）
 
-点击 保存并部署
-
 第三步：绑定 KV 命名空间
-
-部署完成后：
 
 进入 Pages 项目 → 点击 设置 标签
 
@@ -46,17 +38,9 @@
 
 KV 命名空间：选择你创建的 music_kv
 
-点击 保存
-
-重新部署一次（点击 重试部署）
-
-🔑 默认密码
-
-初始密码	music2025
-
 修改密码	https://你的项目名.pages.dev/admin
 
 更换 Logo	https://你的项目名.pages.dev/picture
 
-
+一切到最后都要重新部署一次
 
