@@ -3,4 +3,4 @@ pages_build_output_dir = "."
 
 [[kv_namespaces]]
 binding = "music_kv"
-id = "c040f0843e8340e896d648429f16a2dd"
+id = ""
