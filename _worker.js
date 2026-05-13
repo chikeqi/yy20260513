@@ -1,9 +1,9 @@
-// _worker.js - 管理：/admin 改密码，/picture 换 Logo
+// _worker.js - 完整版音乐网站（电脑端恢复原样，移动端优化）
 const ADMIN_PASSWORD = "ww1234";
 
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8b5cf6"/><text x="50" y="67" text-anchor="middle" fill="white" font-size="50" font-family="Arial">🎵</text></svg>`;
 
-// 修改密码页面（移动端适配）
+// 修改密码页面
 const ADMIN_PAGE = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover"><title>修改密码</title><style>
@@ -11,11 +11,10 @@ const ADMIN_PAGE = `<!DOCTYPE html>
 body{background:#0a0c15;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:16px;}
 .card{background:#11131f;border-radius:28px;padding:28px 24px;width:100%;max-width:400px;border:1px solid #334155;}
 h2{color:#eef2ff;margin-bottom:20px;font-size:1.6rem;text-align:center;}
-input{width:100%;padding:14px 16px;margin:12px 0;border-radius:60px;background:#1e293b;border:none;color:white;font-size:1rem;-webkit-appearance:none;}
-button{background:#3b82f6;border:none;padding:14px;border-radius:60px;color:white;cursor:pointer;width:100%;font-size:1rem;font-weight:500;}
+input{width:100%;padding:14px 16px;margin:12px 0;border-radius:60px;background:#1e293b;border:none;color:white;font-size:1rem;}
+button{background:#3b82f6;border:none;padding:14px;border-radius:60px;color:white;cursor:pointer;width:100%;font-size:1rem;}
 .back{background:#334155;margin-top:12px;text-align:center;display:block;text-decoration:none;padding:14px;border-radius:60px;color:white;}
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:10px 24px;border-radius:60px;font-size:0.85rem;display:none;z-index:1100;white-space:nowrap;}
-@media (max-width:480px){.card{padding:24px 20px;}h2{font-size:1.4rem;}}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:10px 24px;border-radius:60px;font-size:0.85rem;display:none;z-index:1100;}
 </style>
 </head>
 <body>
@@ -41,7 +40,7 @@ document.getElementById('saveBtn').onclick=save;
 </body>
 </html>`;
 
-// 更换 Logo 页面（移动端适配）
+// 更换 Logo 页面
 const PICTURE_PAGE = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover"><title>更换Logo</title><style>
@@ -49,13 +48,12 @@ const PICTURE_PAGE = `<!DOCTYPE html>
 body{background:#0a0c15;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:16px;}
 .card{background:#11131f;border-radius:28px;padding:28px 24px;width:100%;max-width:400px;border:1px solid #334155;}
 h2{color:#eef2ff;margin-bottom:20px;font-size:1.6rem;text-align:center;}
-input{width:100%;padding:14px 16px;margin:10px 0;border-radius:60px;background:#1e293b;border:none;color:white;font-size:1rem;-webkit-appearance:none;}
-button{background:#3b82f6;border:none;padding:14px;border-radius:60px;color:white;cursor:pointer;width:100%;font-size:1rem;font-weight:500;margin-top:10px;}
+input{width:100%;padding:14px 16px;margin:10px 0;border-radius:60px;background:#1e293b;border:none;color:white;font-size:1rem;}
+button{background:#3b82f6;border:none;padding:14px;border-radius:60px;color:white;cursor:pointer;width:100%;font-size:1rem;margin-top:10px;}
 .back{background:#334155;margin-top:12px;text-align:center;display:block;text-decoration:none;padding:14px;border-radius:60px;color:white;}
 .preview{text-align:center;margin:20px 0;padding:16px;background:#0a0c15;border-radius:20px;}
 .preview img{max-width:80px;border-radius:20px;}
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:10px 24px;border-radius:60px;font-size:0.85rem;display:none;z-index:1100;white-space:nowrap;}
-@media (max-width:480px){.card{padding:24px 20px;}h2{font-size:1.4rem;}}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:10px 24px;border-radius:60px;font-size:0.85rem;display:none;z-index:1100;}
 </style>
 </head>
 <body>
@@ -80,7 +78,7 @@ document.getElementById('logoUrl').oninput=updatePreview;document.getElementById
 </body>
 </html>`;
 
-// 首页 HTML（完美移动端适配）
+// 首页 HTML
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -95,213 +93,189 @@ const HTML_CONTENT = `<!DOCTYPE html>
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             color: #eef2ff;
             min-height: 100vh;
-            padding: 16px;
-            padding-bottom: 30px;
+            padding: 20px;
         }
-        /* 顶部标题 */
+        /* ========== 电脑端样式（默认） ========== */
+        /* 顶部标题 - 电脑端显示 */
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            padding-top: 8px;
+            margin-bottom: 25px;
         }
         .header h1 {
-            font-size: clamp(1.4rem, 6vw, 1.8rem);
+            font-size: 1.8rem;
             background: linear-gradient(135deg, #c084fc, #60a5fa);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
         .header p {
-            font-size: clamp(0.6rem, 3vw, 0.7rem);
+            font-size: 0.75rem;
             color: #6b7280;
-            margin-top: 4px;
+            margin-top: 5px;
         }
-        /* Logo 左上角（移动端也保留） */
+        /* Logo 左上角（电脑端） */
         .logo-area {
             position: fixed;
-            top: 12px;
-            left: 12px;
+            top: 15px;
+            left: 15px;
             cursor: pointer;
             z-index: 100;
         }
         .logo-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
             object-fit: cover;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
-        /* 上传卡片 - 移动端全宽 */
+        .logo-img:hover { transform: scale(1.02); }
+        /* 上传和播放器 - 横向排放（电脑端） */
+        .top-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
         .upload-card {
-            background: rgba(18, 20, 32, 0.7);
+            flex: 1;
+            min-width: 200px;
+            background: rgba(18, 20, 32, 0.6);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 14px 18px;
-            margin-bottom: 16px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
             gap: 12px;
             border: 1px solid rgba(255,255,255,0.05);
         }
         .upload-btn {
             background: linear-gradient(135deg, #8b5cf6, #3b82f6);
             border: none;
-            padding: 12px 24px;
-            border-radius: 60px;
+            padding: 10px 24px;
+            border-radius: 40px;
             font-weight: 600;
             color: white;
             cursor: pointer;
-            font-size: 0.95rem;
-            flex: 1;
-            text-align: center;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
         .upload-note {
             font-size: 0.7rem;
             color: #6b7280;
         }
         #fileInput { display: none; }
-        /* 播放器卡片 - 移动端竖向排列 */
         .player-card {
-            background: rgba(18, 20, 32, 0.7);
+            flex: 2;
+            min-width: 280px;
+            background: rgba(18, 20, 32, 0.6);
             backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 16px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .player-top {
+            border-radius: 20px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            margin-bottom: 14px;
+            gap: 15px;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .cover-art {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             object-fit: cover;
         }
         .track-info {
             flex: 1;
+            min-width: 120px;
         }
-        .track-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .track-artist {
-            font-size: 0.75rem;
-            color: #a78bfa;
-        }
-        .progress-area {
-            margin-bottom: 14px;
-        }
+        .track-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-artist { font-size: 0.7rem; color: #a78bfa; }
+        .progress-area { flex: 2; min-width: 130px; }
         .progress-bg {
             background: #2d2a3e;
-            height: 5px;
+            height: 4px;
             border-radius: 10px;
             cursor: pointer;
         }
         .progress-fill {
             background: linear-gradient(90deg, #c084fc, #60a5fa);
             width: 0%;
-            height: 5px;
+            height: 4px;
             border-radius: 10px;
         }
-        .time-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.65rem;
-            margin-top: 6px;
-            color: #9ca3af;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
+        .time-row { display: flex; justify-content: space-between; font-size: 0.65rem; margin-top: 5px; color: #9ca3af; }
+        .controls { display: flex; gap: 8px; }
         .ctrl-btn {
             background: #1e1b2e;
             border: none;
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             color: white;
             cursor: pointer;
-            transition: transform 0.1s;
         }
-        .ctrl-btn:active { transform: scale(0.94); }
-        .play-btn {
-            background: #8b5cf6;
-            width: 56px;
-            height: 56px;
-            font-size: 1.4rem;
-        }
+        .play-btn { background: #8b5cf6; width: 44px; height: 44px; font-size: 1.1rem; }
         /* 模式栏 */
         .mode-bar {
             display: flex;
             justify-content: center;
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 15px;
+            margin-bottom: 25px;
         }
         .mode-btn {
             background: #1e293b;
             border: none;
-            padding: 8px 24px;
-            border-radius: 60px;
+            padding: 8px 28px;
+            border-radius: 40px;
             color: #cbd5e1;
             cursor: pointer;
             font-size: 0.85rem;
-            font-weight: 500;
-            transition: 0.2s;
         }
         .mode-btn.active {
             background: #3b82f6;
             color: white;
-            box-shadow: 0 0 10px #3b82f6;
+            box-shadow: 0 0 8px #3b82f6;
         }
-        /* 音乐列表 - 移动端1列，平板2列，电脑3列 */
+        /* 音乐列表 - 电脑端3列 */
         .music-section {
-            margin-top: 8px;
+            margin-top: 10px;
         }
         .music-section h3 {
             font-size: 1rem;
-            margin-bottom: 14px;
+            margin-bottom: 15px;
             color: #cbd5e1;
-            padding-left: 4px;
         }
         .music-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
         }
         .music-item {
             background: #11131f;
-            border-radius: 18px;
-            padding: 12px 14px;
+            border-radius: 16px;
+            padding: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
             border: 1px solid #1f2937;
             transition: 0.2s;
         }
-        .music-item:active { transform: scale(0.98); background: #1a1d2e; }
+        .music-item:hover {
+            background: #1a1d2e;
+            transform: translateY(-2px);
+        }
         .music-cover {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             object-fit: cover;
         }
         .music-name {
             flex: 1;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
@@ -309,28 +283,17 @@ const HTML_CONTENT = `<!DOCTYPE html>
         }
         .music-actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
         }
         .icon-btn {
             background: none;
             border: none;
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
             color: #cbd5e1;
-            padding: 8px;
+            padding: 5px;
         }
         .delete-btn { color: #f87171; }
-        /* 平板及以上 */
-        @media (min-width: 600px) {
-            body { padding: 20px; }
-            .music-grid { grid-template-columns: repeat(2, 1fr); }
-            .logo-img { width: 60px; height: 60px; }
-        }
-        @media (min-width: 900px) {
-            .music-grid { grid-template-columns: repeat(3, 1fr); }
-            .upload-card { max-width: 400px; }
-            .player-card { max-width: 600px; margin-left: auto; margin-right: auto; }
-        }
         /* 弹窗 */
         .modal {
             display: none;
@@ -341,23 +304,21 @@ const HTML_CONTENT = `<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(8px);
         }
         .modal-content {
             background: #0f111f;
-            border-radius: 32px;
+            border-radius: 28px;
             padding: 28px 24px;
-            width: 85%;
+            width: 90%;
             max-width: 320px;
             text-align: center;
             border: 1px solid #334155;
         }
-        .modal-content h3 { font-size: 1.4rem; margin-bottom: 8px; }
-        .modal-content p { font-size: 0.8rem; color: #94a3b8; margin-bottom: 16px; }
+        .modal-content h3 { font-size: 1.3rem; margin-bottom: 8px; }
         .modal-content input {
             width: 100%;
             padding: 14px;
-            margin: 8px 0 16px;
+            margin: 15px 0;
             border-radius: 60px;
             background: #1e293b;
             border: none;
@@ -368,13 +329,11 @@ const HTML_CONTENT = `<!DOCTYPE html>
         .modal-content button {
             background: #3b82f6;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 24px;
             border-radius: 60px;
             color: white;
             margin: 5px;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
         }
         .toast {
             position: fixed;
@@ -388,63 +347,143 @@ const HTML_CONTENT = `<!DOCTYPE html>
             font-size: 0.85rem;
             display: none;
             z-index: 1100;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        @media (max-width: 480px) {
-            body { padding: 12px; }
-            .upload-btn { padding: 10px 16px; font-size: 0.85rem; }
-            .ctrl-btn { width: 44px; height: 44px; }
-            .play-btn { width: 52px; height: 52px; }
-            .toast { white-space: normal; max-width: 85%; text-align: center; }
+
+        /* ========== 移动端样式（宽度 ≤ 768px） ========== */
+        @media (max-width: 768px) {
+            body { padding: 16px; padding-bottom: 30px; }
+            /* 隐藏标题副标题 */
+            .header { display: none; }
+            /* Logo 居中放大 */
+            .logo-area {
+                position: static;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .logo-img {
+                width: 100px;
+                height: 100px;
+                border-radius: 28px;
+            }
+            /* 上传和播放器改为竖向排列 */
+            .top-row {
+                flex-direction: column;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .upload-card {
+                order: 2;  /* 上传卡片移到播放器下面 */
+                justify-content: center;
+                padding: 12px;
+            }
+            .player-card {
+                order: 1;
+                flex-direction: column;
+                text-align: center;
+                padding: 16px;
+            }
+            .cover-art {
+                width: 80px;
+                height: 80px;
+                border-radius: 20px;
+                margin-bottom: 8px;
+            }
+            .track-info { text-align: center; }
+            .track-title { font-size: 1.1rem; white-space: normal; }
+            .controls { justify-content: center; margin-top: 5px; }
+            .ctrl-btn { width: 48px; height: 48px; font-size: 1.1rem; }
+            .play-btn { width: 56px; height: 56px; font-size: 1.3rem; }
+            /* 音乐列表改为1列 */
+            .music-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .music-item {
+                padding: 12px 14px;
+            }
+            .music-cover {
+                width: 48px;
+                height: 48px;
+            }
+            .mode-btn {
+                padding: 6px 20px;
+                font-size: 0.8rem;
+            }
+            /* 上传按钮放底部 - 通过 order 实现 */
+            .upload-card {
+                margin-top: 0;
+                margin-bottom: 10px;
+            }
+            .upload-btn {
+                flex: 1;
+                text-align: center;
+                padding: 12px;
+                font-size: 1rem;
+            }
+            .upload-note {
+                display: none;  /* 移动端隐藏提示文字节省空间 */
+            }
+        }
+
+        /* 平板适配 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .music-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Logo 区域（电脑端左上角，移动端居中放大） -->
     <div class="logo-area" id="logoArea">
         <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/60/60" alt="logo">
     </div>
 
+    <!-- 标题（移动端隐藏） -->
     <div class="header">
         <h1>🎵 音乐库</h1>
         <p>云端收藏 · 永久保存</p>
     </div>
 
-    <div class="upload-card">
-        <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
-        <span class="upload-note">MP3 | 需密码</span>
-        <input type="file" id="fileInput" accept="audio/mpeg" multiple style="display:none">
-    </div>
+    <!-- 上传和播放器区域 -->
+    <div class="top-row">
+        <div class="upload-card">
+            <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
+            <span class="upload-note">MP3 | 需密码</span>
+            <input type="file" id="fileInput" accept="audio/mpeg" multiple>
+        </div>
 
-    <div class="player-card">
-        <div class="player-top">
-            <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/56/56">
+        <div class="player-card">
+            <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/52/52">
             <div class="track-info">
                 <div class="track-title" id="nowTitle">未选择歌曲</div>
                 <div class="track-artist" id="nowArtist">点击列表播放</div>
             </div>
-        </div>
-        <div class="progress-area">
-            <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="time-row"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
-        </div>
-        <div class="controls">
-            <button class="ctrl-btn" id="prevBtn">⏮</button>
-            <button class="ctrl-btn play-btn" id="playPauseBtn">▶</button>
-            <button class="ctrl-btn" id="nextBtn">⏭</button>
+            <div class="progress-area">
+                <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="time-row"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
+            </div>
+            <div class="controls">
+                <button class="ctrl-btn" id="prevBtn">⏮</button>
+                <button class="ctrl-btn play-btn" id="playPauseBtn">▶</button>
+                <button class="ctrl-btn" id="nextBtn">⏭</button>
+            </div>
         </div>
     </div>
 
+    <!-- 模式切换 -->
     <div class="mode-bar">
         <button class="mode-btn active" data-mode="all">🎶 全部循环</button>
         <button class="mode-btn" data-mode="single">🔂 单曲循环</button>
     </div>
 
+    <!-- 音乐列表 -->
     <div class="music-section">
         <h3>📻 我的音乐库</h3>
         <div class="music-grid" id="musicList"></div>
     </div>
 
+    <!-- 密码弹窗 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
             <h3>🔐 需要密码</h3>
@@ -496,7 +535,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
             audio.load();
             document.getElementById("nowTitle").innerText = song.name;
             document.getElementById("nowArtist").innerText = song.artist || "云端音乐";
-            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/56/56";
+            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/80/80";
             audio.play().then(() => { isPlaying = true; updatePlayButton(); }).catch(() => { isPlaying = false; updatePlayButton(); });
         }
 
@@ -561,7 +600,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 const div = document.createElement("div");
                 div.className = "music-item";
                 div.innerHTML = \`
-                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/48/48'}" onerror="this.src='https://picsum.photos/id/26/48/48'">
+                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/44/44'}" onerror="this.src='https://picsum.photos/id/26/44/44'">
                     <div class="music-name">\${escapeHtml(song.name)}</div>
                     <div class="music-actions">
                         <button class="icon-btn play-song" data-id="\${song.id}">▶</button>
@@ -611,7 +650,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 if (logoConfig.imgUrl && logoConfig.imgUrl.trim()) {
                     logoImg.src = logoConfig.imgUrl;
                 } else {
-                    logoImg.src = "https://picsum.photos/id/20/60/60";
+                    logoImg.src = "https://picsum.photos/id/20/100/100";
                 }
                 const logoArea = document.getElementById("logoArea");
                 logoArea.style.cursor = logoConfig.linkUrl ? "pointer" : "default";
