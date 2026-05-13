@@ -1,4 +1,3 @@
-// functions/api/songs.js
 export async function onRequest(context) {
     const { env } = context;
     
@@ -7,18 +6,16 @@ export async function onRequest(context) {
         const songs = [];
         
         for (const key of list.keys) {
-            // 跳过元数据key（以meta_开头的）
             if (key.name.startsWith('meta_')) continue;
             
             const metaKey = `meta_${key.name}`;
             let metadata = await env.music_kv.get(metaKey, 'json');
             
             if (!metadata) {
-                // 如果没有元数据，创建默认的
                 metadata = {
-                    name: key.name.replace(/\.mp3$/, '').replace(/_\d+_/, ''),
+                    name: decodeURIComponent(key.name.replace(/^\d+_/, '').replace(/\.mp3$/, '')),
                     artist: '未知歌手',
-                    cover: `https://picsum.photos/id/${Math.floor(Math.random() * 100)}/100/100`
+                    cover: 'https://picsum.photos/id/1/100/100'
                 };
             }
             
@@ -31,9 +28,7 @@ export async function onRequest(context) {
             });
         }
         
-        // 按上传时间倒序
         songs.reverse();
-        
         return Response.json({ success: true, songs });
     } catch (error) {
         return Response.json({ success: false, error: error.message }, { status: 500 });
