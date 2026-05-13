@@ -78,13 +78,12 @@ document.getElementById('logoUrl').oninput=updatePreview;document.getElementById
 </body>
 </html>`;
 
-// 首页 HTML（无封面，更简洁）
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>云音盒 · 音乐收藏家</title>
+    <title>老朱的🎵</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.ico">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -434,7 +433,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
     </div>
 
     <div class="music-section">
-        <h3>📻 我的音乐库</h3>
+        <h3>📻 老朱的音乐列表</h3>
         <div class="music-grid" id="musicList"></div>
     </div>
 
