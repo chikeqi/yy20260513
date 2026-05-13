@@ -1,131 +1,804 @@
-// _worker.js - 一个文件搞定所有功能
-const ADMIN_PASSWORD = "ww123456";
+// _worker.js - 完整版音乐网站（API + 现代化界面）
+const ADMIN_PASSWORD = "ww1234";
+
+const HTML_CONTENT = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>音乐库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0c15;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #eef2ff;
+        }
+
+        .glass-nav {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 12, 21, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .logo:hover { opacity: 0.8; }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: #cbd5e1;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1));
+            border-radius: 2rem;
+            padding: 2rem 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .hero p {
+            color: #9ca3af;
+            margin-bottom: 1.5rem;
+        }
+        .upload-trigger {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .upload-trigger:active { transform: scale(0.97); }
+
+        .player-card {
+            background: rgba(18, 20, 32, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 2rem;
+        }
+        .cover-art {
+            width: 110px;
+            height: 110px;
+            background: #1e1b2e;
+            border-radius: 1.5rem;
+            object-fit: cover;
+            box-shadow: 0 20px 30px -12px black;
+        }
+        .track-info {
+            flex: 1;
+        }
+        .track-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .track-artist {
+            color: #a78bfa;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .progress-wrapper {
+            max-width: 400px;
+            margin-top: 8px;
+        }
+        .time-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+        .progress-bg {
+            background: #2d2a3e;
+            height: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #c084fc, #60a5fa);
+            width: 0%;
+            height: 5px;
+            border-radius: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 1.2rem;
+            margin-top: 12px;
+        }
+        .ctrl-circle {
+            background: #1e1b2e;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .ctrl-circle:active { transform: scale(0.94); }
+        .play-circle {
+            background: #8b5cf6;
+            width: 54px;
+            height: 54px;
+            font-size: 1.5rem;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .mode-group {
+            display: flex;
+            gap: 12px;
+            background: #11131f;
+            padding: 6px 16px;
+            border-radius: 60px;
+        }
+        .mode {
+            background: transparent;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 40px;
+            color: #94a3b8;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .mode.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 0 6px #3b82f6;
+        }
+        .badge {
+            background: #1f2937;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #b9e0ff;
+        }
+
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.2rem;
+            margin-top: 0.8rem;
+        }
+        .music-card {
+            background: #11131f;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            transition: 0.2s;
+            border: 1px solid #1f2937;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .music-card:hover {
+            background: #1a1d2e;
+            transform: translateY(-3px);
+        }
+        .music-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+        }
+        .music-cover-small {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+        .music-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .music-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #cbd5e1;
+            transition: 0.1s;
+        }
+        .icon-btn:active { transform: scale(0.9); }
+        .delete-red { color: #f87171; }
+
+        .modal-mask {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-panel {
+            background: #0f111f;
+            border-radius: 2rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 380px;
+            border: 1px solid #334155;
+        }
+        .modal-panel input {
+            width: 100%;
+            padding: 12px;
+            margin: 1rem 0;
+            border-radius: 60px;
+            background: #1e293b;
+            border: none;
+            color: white;
+        }
+        .flex-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #bef264;
+            padding: 8px 22px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            z-index: 1100;
+            display: none;
+        }
+        input, button {
+            font-family: inherit;
+        }
+        @media (max-width: 640px) {
+            .glass-nav { padding: 0.75rem 1rem; }
+            .container { padding: 1rem; }
+            .player-card { flex-direction: column; text-align: center; }
+            .controls { justify-content: center; }
+            .track-info { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-nav">
+        <div class="logo" id="customLogoArea">
+            <span class="logo-icon" id="logoEmoji">🎵</span>
+            <span class="logo-text" id="logoTxt">云音盒</span>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-glass" id="settingsLogoBtn">✨ 更换Logo</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="hero">
+            <h1>🎧 老朱音乐库</h1>
+            <p>上传 MP3 永久保存 · 随时畅听 · 仅你可删除</p>
+            <button class="upload-trigger" id="mainUploadBtn">📤 上传音乐 (MP3)</button>
+            <input type="file" id="hiddenFileInput" accept="audio/mpeg" multiple style="display:none">
+        </div>
+
+        <div class="player-card">
+            <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/200/200" alt="cover">
+            <div class="track-info">
+                <div class="track-title" id="nowTitle">✨ 未选择歌曲</div>
+                <div class="track-artist" id="nowArtist">点击下方列表播放</div>
+                <div class="progress-wrapper">
+                    <div class="time-line"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
+                    <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
+                </div>
+                <div class="controls">
+                    <button class="ctrl-circle" id="prevBtn">⏮</button>
+                    <button class="ctrl-circle play-circle" id="playPauseBtn">▶</button>
+                    <button class="ctrl-circle" id="nextBtn">⏭</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="mode-group">
+                <button class="mode active" data-mode="all">🎶 全部循环</button>
+                <button class="mode" data-mode="single">🔂 单曲循环</button>
+            </div>
+            <div class="badge" id="storageBadge">☁️ KV 永久存储</div>
+        </div>
+
+        <h3 style="margin-bottom: 12px;">📻 我的音乐库</h3>
+        <div id="musicListContainer" class="music-grid">
+            <div style="grid-column:1/-1; text-align:center; color:#6b7280;">✨ 暂无歌曲，点击上方上传 ✨</div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal-mask">
+        <div class="modal-panel">
+            <h3>🔐 删除授权</h3>
+            <p style="font-size:0.8rem;">输入密码将永久删除音乐</p>
+            <input type="password" id="delPassword" placeholder="删除密码">
+            <div class="flex-btns">
+                <button id="confirmDelBtn">确认删除</button>
+                <button id="cancelDelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logoModal" class="modal-mask">
+        <div class="modal-panel">
+            <h3>🎨 自定义 Logo</h3>
+            <input type="text" id="logoUrl" placeholder="https://tc.xuer.us.kg/image/1775711836560-6e9y64.jpg" autocomplete="off">
+            <input type="text" id="logoLink" placeholder="点击 Logo 跳转链接 (可选)">
+            <div style="margin:12px 0; font-size:0.7rem; color:#94a3b8;">预览: <span id="previewLogo">🎵</span></div>
+            <div class="flex-btns">
+                <button id="saveLogoBtn">保存</button>
+                <button id="resetLogoBtn">恢复默认</button>
+                <button id="closeLogoBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastMsg" class="toast"></div>
+
+    <script>
+        const ADMIN_PASSWORD = "music2025";
+        let playMode = "all";
+        let songsList = [];
+        let currentIndex = 0;
+        let audio = new Audio();
+        let isPlaying = false;
+        let pendingDeleteId = null;
+
+        let logoConfig = { imgUrl: "", linkUrl: "", useEmoji: true };
+
+        function showToast(msg, duration = 2000) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', duration);
+        }
+
+        function formatTime(sec) {
+            if (isNaN(sec)) return "0:00";
+            let m = Math.floor(sec / 60);
+            let s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' + s : s}`;
+        }
+
+        function updatePlayButton() {
+            const btn = document.getElementById('playPauseBtn');
+            btn.innerText = isPlaying ? "⏸" : "▶";
+        }
+
+        function playSongByIndex(index) {
+            if (!songsList.length) return;
+            if (index < 0) index = 0;
+            if (index >= songsList.length) index = 0;
+            currentIndex = index;
+            const song = songsList[currentIndex];
+            audio.src = song.url;
+            audio.load();
+            document.getElementById('nowTitle').innerText = song.name;
+            document.getElementById('nowArtist').innerText = song.artist || "云端音乐";
+            document.getElementById('nowCover').src = song.cover || "https://picsum.photos/id/145/200/200";
+            audio.play().then(() => {
+                isPlaying = true;
+                updatePlayButton();
+            }).catch(() => {
+                isPlaying = false;
+                updatePlayButton();
+            });
+        }
+
+        function nextTrack() {
+            if (!songsList.length) return;
+            if (playMode === "single") {
+                if (audio.src) audio.currentTime = 0;
+                audio.play().catch(e=>console.warn);
+                return;
+            }
+            let nextIdx = currentIndex + 1;
+            if (nextIdx >= songsList.length) nextIdx = 0;
+            playSongByIndex(nextIdx);
+        }
+
+        function prevTrack() {
+            if (!songsList.length) return;
+            let prevIdx = currentIndex - 1;
+            if (prevIdx < 0) prevIdx = songsList.length - 1;
+            playSongByIndex(prevIdx);
+        }
+
+        function togglePlay() {
+            if (!songsList.length && !audio.src) { showToast("暂无歌曲，请先上传"); return; }
+            if (!audio.src && songsList.length) playSongByIndex(0);
+            else if (isPlaying) { audio.pause(); isPlaying = false; updatePlayButton(); }
+            else { audio.play().then(()=>{ isPlaying=true; updatePlayButton(); }).catch(()=>{ isPlaying=false; updatePlayButton(); }); }
+        }
+
+        async function fetchSongs() {
+            const res = await fetch('/api/songs');
+            const data = await res.json();
+            return data.songs || [];
+        }
+
+        async function uploadSong(file) {
+            const fd = new FormData();
+            fd.append('song', file);
+            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+            return res.json();
+        }
+
+        async function deleteSongReq(id, pwd) {
+            const res = await fetch('/api/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, password: pwd })
+            });
+            return res.json();
+        }
+
+        async function renderMusicList() {
+            const container = document.getElementById('musicListContainer');
+            if (!container) return;
+            if (!songsList.length) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#6b7280;">🎧 暂无音乐，点击上方上传 🎧</div>';
+                return;
+            }
+            container.innerHTML = '';
+            songsList.forEach((song, idx) => {
+                const card = document.createElement('div');
+                card.className = 'music-card';
+                card.innerHTML = \`
+                    <div class="music-info">
+                        <img class="music-cover-small" src="\${song.cover || 'https://picsum.photos/id/26/48/48'}" onerror="this.src='https://picsum.photos/id/26/48/48'">
+                        <div class="music-name">\${escapeHtml(song.name)}</div>
+                    </div>
+                    <div class="music-actions">
+                        <button class="icon-btn play-song" data-id="\${song.id}">▶</button>
+                        <button class="icon-btn delete-red delete-song" data-id="\${song.id}">🗑️</button>
+                    </div>
+                \`;
+                container.appendChild(card);
+            });
+            document.querySelectorAll('.play-song').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = btn.getAttribute('data-id');
+                    const index = songsList.findIndex(s => s.id === id);
+                    if (index !== -1) playSongByIndex(index);
+                });
+            });
+            document.querySelectorAll('.delete-song').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    pendingDeleteId = btn.getAttribute('data-id');
+                    document.getElementById('deleteModal').style.display = 'flex';
+                });
+            });
+        }
+
+        function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+        async function refreshAll() {
+            const raw = await fetchSongs();
+            songsList = raw.map(s => ({ ...s, artist: s.artist || '音乐人' }));
+            await renderMusicList();
+        }
+
+        function loadLogoPref() {
+            const saved = localStorage.getItem('music_logo_config');
+            if (saved) {
+                try {
+                    const cfg = JSON.parse(saved);
+                    logoConfig = cfg;
+                } catch(e) {}
+            }
+            applyLogoUI();
+        }
+        function applyLogoUI() {
+            const logoDiv = document.querySelector('.logo');
+            if (logoConfig.imgUrl && logoConfig.imgUrl.trim() !== "") {
+                logoDiv.innerHTML = \`<img src="\${logoConfig.imgUrl}" style="height: 32px; border-radius: 12px;" alt="logo"><span class="logo-text" id="logoTxt">云音盒</span>\`;
+            } else {
+                logoDiv.innerHTML = \`<span class="logo-icon" id="logoEmoji">🎵</span><span class="logo-text" id="logoTxt">云音盒</span>\`;
+            }
+            const logoArea = document.querySelector('.logo');
+            logoArea.style.cursor = logoConfig.linkUrl ? 'pointer' : 'default';
+            logoArea.onclick = () => {
+                if (logoConfig.linkUrl) window.open(logoConfig.linkUrl, '_blank');
+            };
+        }
+        function saveLogo(img, link) {
+            logoConfig = { imgUrl: img || '', linkUrl: link || '', useEmoji: !img };
+            localStorage.setItem('music_logo_config', JSON.stringify(logoConfig));
+            applyLogoUI();
+            showToast('Logo 已更新', 1200);
+        }
+        function resetLogo() {
+            logoConfig = { imgUrl: '', linkUrl: '', useEmoji: true };
+            localStorage.removeItem('music_logo_config');
+            applyLogoUI();
+            showToast('已恢复默认', 1000);
+        }
+
+        function bindEvents() {
+            document.getElementById('mainUploadBtn').onclick = () => document.getElementById('hiddenFileInput').click();
+            const fileInput = document.getElementById('hiddenFileInput');
+            fileInput.onchange = async (e) => {
+                const files = Array.from(e.target.files);
+                for (let f of files) {
+                    if (!f.name.toLowerCase().endsWith('.mp3')) { showToast(\`跳过: \${f.name}\`, 1000); continue; }
+                    showToast(\`⬆️ 上传中 \${f.name}\`);
+                    const resp = await uploadSong(f);
+                    if (resp.success) showToast(\`✅ \${resp.name} 成功\`);
+                    else showToast(\`❌ 失败: \${resp.error}\`);
+                }
+                await refreshAll();
+                fileInput.value = '';
+            };
+            document.getElementById('playPauseBtn').onclick = togglePlay;
+            document.getElementById('nextBtn').onclick = nextTrack;
+            document.getElementById('prevBtn').onclick = prevTrack;
+            const progressBg = document.getElementById('progressBg');
+            audio.addEventListener('timeupdate', () => {
+                if (audio.duration) {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    document.getElementById('progressFill').style.width = percent + '%';
+                    document.getElementById('curTime').innerText = formatTime(audio.currentTime);
+                    document.getElementById('totalTime').innerText = formatTime(audio.duration);
+                }
+            });
+            progressBg.addEventListener('click', (e) => {
+                if (audio.duration) {
+                    const rect = progressBg.getBoundingClientRect();
+                    const ratio = (e.clientX - rect.left) / rect.width;
+                    audio.currentTime = ratio * audio.duration;
+                }
+            });
+            audio.onended = () => nextTrack();
+            document.querySelectorAll('.mode').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.mode').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    playMode = btn.dataset.mode;
+                    showToast(\`模式: \${playMode === 'all' ? '全部循环' : '单曲循环'}\`);
+                };
+            });
+            const delModal = document.getElementById('deleteModal');
+            document.getElementById('confirmDelBtn').onclick = async () => {
+                const pwd = document.getElementById('delPassword').value;
+                if (pwd !== ADMIN_PASSWORD) { showToast('密码错误'); return; }
+                if (pendingDeleteId) {
+                    const result = await deleteSongReq(pendingDeleteId, pwd);
+                    if (result.success) { showToast('删除成功'); await refreshAll(); if (songsList.length===0) { audio.pause(); isPlaying=false; audio.src=''; updatePlayButton(); } }
+                    else showToast('删除失败');
+                    pendingDeleteId = null;
+                }
+                delModal.style.display = 'none';
+                document.getElementById('delPassword').value = '';
+            };
+            document.getElementById('cancelDelBtn').onclick = () => { delModal.style.display = 'none'; document.getElementById('delPassword').value = ''; pendingDeleteId = null; };
+            const logoModal = document.getElementById('logoModal');
+            document.getElementById('settingsLogoBtn').onclick = () => {
+                document.getElementById('logoUrl').value = logoConfig.imgUrl || '';
+                document.getElementById('logoLink').value = logoConfig.linkUrl || '';
+                document.getElementById('previewLogo').innerHTML = logoConfig.imgUrl ? \`<img src="\${logoConfig.imgUrl}" style="height:30px;border-radius:8px;">\` : '🎵';
+                logoModal.style.display = 'flex';
+            };
+            document.getElementById('saveLogoBtn').onclick = () => {
+                const img = document.getElementById('logoUrl').value;
+                const link = document.getElementById('logoLink').value;
+                saveLogo(img, link);
+                logoModal.style.display = 'none';
+            };
+            document.getElementById('resetLogoBtn').onclick = () => { resetLogo(); logoModal.style.display = 'none'; };
+            document.getElementById('closeLogoBtn').onclick = () => { logoModal.style.display = 'none'; };
+        }
+
+        async function init() {
+            loadLogoPref();
+            bindEvents();
+            await refreshAll();
+        }
+        init();
+    </script>
+</body>
+</html>`;
 
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const path = url.pathname;
         
-        // 获取歌曲列表
+        // CORS 头
+        const corsHeaders = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        };
+        
+        if (request.method === "OPTIONS") {
+            return new Response(null, { headers: corsHeaders });
+        }
+        
+        // ========== API: 获取歌曲列表 ==========
         if (path === "/api/songs" && request.method === "GET") {
-            const list = await env.music_kv.list();
-            const songs = [];
-            for (const key of list.keys) {
-                if (key.name.startsWith('meta_')) continue;
-                const meta = await env.music_kv.get(`meta_${key.name}`, 'json');
-                songs.push({
-                    id: key.name,
-                    name: meta?.name || key.name.replace(/^\d+_/, '').replace(/\.mp3$/, ''),
-                    url: `/api/play/${key.name}`
+            try {
+                const list = await env.music_kv.list();
+                const songs = [];
+                for (const key of list.keys) {
+                    if (key.name.startsWith('meta_')) continue;
+                    const metaKey = `meta_${key.name}`;
+                    let metadata = await env.music_kv.get(metaKey, 'json');
+                    if (!metadata) {
+                        metadata = {
+                            name: decodeURIComponent(key.name.replace(/^\d+_/, '').replace(/\.mp3$/, '')),
+                            artist: '未知歌手',
+                            cover: `https://picsum.photos/id/${Math.floor(Math.random() * 100)}/100/100`
+                        };
+                    }
+                    songs.push({
+                        id: key.name,
+                        name: metadata.name,
+                        artist: metadata.artist,
+                        cover: metadata.cover,
+                        url: `/api/play/${encodeURIComponent(key.name)}`
+                    });
+                }
+                songs.reverse();
+                return Response.json({ success: true, songs }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders });
+            }
+        }
+        
+        // ========== API: 播放音乐 ==========
+        if (path.startsWith("/api/play/") && request.method === "GET") {
+            const songId = decodeURIComponent(path.replace("/api/play/", ""));
+            try {
+                const audioData = await env.music_kv.get(songId, { type: 'arrayBuffer' });
+                if (!audioData) {
+                    return new Response("音乐不存在", { status: 404, headers: corsHeaders });
+                }
+                return new Response(audioData, {
+                    headers: {
+                        "Content-Type": "audio/mpeg",
+                        "Cache-Control": "public, max-age=86400",
+                        ...corsHeaders
+                    }
                 });
+            } catch (error) {
+                return new Response("读取失败", { status: 500, headers: corsHeaders });
             }
-            return Response.json({ songs: songs.reverse() });
         }
         
-        // 播放音乐
-        if (path.startsWith("/api/play/")) {
-            const id = path.replace("/api/play/", "");
-            const audio = await env.music_kv.get(id, { type: 'arrayBuffer' });
-            if (!audio) return new Response("Not found", { status: 404 });
-            return new Response(audio, { headers: { "Content-Type": "audio/mpeg" } });
-        }
-        
-        // 上传音乐
+        // ========== API: 上传音乐 ==========
         if (path === "/api/upload" && request.method === "POST") {
-            const formData = await request.formData();
-            const file = formData.get("song");
-            if (!file || !file.name.endsWith('.mp3')) {
-                return Response.json({ success: false, error: "请上传 MP3 文件" });
+            try {
+                const formData = await request.formData();
+                const songFile = formData.get("song");
+                if (!songFile || !songFile.name.toLowerCase().endsWith('.mp3')) {
+                    return Response.json({ success: false, error: '请上传 MP3 文件' }, { headers: corsHeaders });
+                }
+                const timestamp = Date.now();
+                const cleanName = songFile.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5.]/g, '_');
+                const songId = `${timestamp}_${cleanName}`;
+                const songBuffer = await songFile.arrayBuffer();
+                await env.music_kv.put(songId, songBuffer);
+                const songName = songFile.name.replace(/\.mp3$/i, '');
+                await env.music_kv.put(`meta_${songId}`, JSON.stringify({
+                    name: songName,
+                    artist: '上传者',
+                    cover: `https://picsum.photos/id/${Math.floor(Math.random() * 100 + 10)}/100/100`,
+                    uploadTime: timestamp
+                }));
+                return Response.json({ success: true, name: songName, id: songId }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
             }
-            const id = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-            const buffer = await file.arrayBuffer();
-            await env.music_kv.put(id, buffer);
-            await env.music_kv.put(`meta_${id}`, JSON.stringify({
-                name: file.name.replace(/\.mp3$/, ''),
-                uploadTime: Date.now()
-            }));
-            return Response.json({ success: true, name: file.name });
         }
         
-        // 删除音乐
+        // ========== API: 删除音乐 ==========
         if (path === "/api/delete" && request.method === "POST") {
-            const { id, password } = await request.json();
-            if (password !== ADMIN_PASSWORD) {
-                return Response.json({ success: false, error: "密码错误" });
+            try {
+                const { id, password } = await request.json();
+                if (password !== ADMIN_PASSWORD) {
+                    return Response.json({ success: false, error: '密码错误' }, { headers: corsHeaders });
+                }
+                await env.music_kv.delete(id);
+                await env.music_kv.delete(`meta_${id}`);
+                return Response.json({ success: true }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
             }
-            await env.music_kv.delete(id);
-            await env.music_kv.delete(`meta_${id}`);
-            return Response.json({ success: true });
         }
         
-        // 返回首页
+        // ========== 返回首页 ==========
         if (path === "/" || path === "") {
-            return new Response(await getIndexHtml(), {
-                headers: { "Content-Type": "text/html" }
+            return new Response(HTML_CONTENT, {
+                headers: { "Content-Type": "text/html", ...corsHeaders }
             });
         }
         
-        return new Response("Not found", { status: 404 });
+        return new Response("Not found", { status: 404, headers: corsHeaders });
     }
 };
-
-async function getIndexHtml() {
-    return `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>我的音乐站</title>
-<style>
-body{font-family:system-ui;max-width:600px;margin:0 auto;padding:20px;background:#0f172a;color:white;}
-.upload-btn{background:#3b82f6;padding:12px 24px;border-radius:30px;cursor:pointer;display:inline-block;margin:20px 0;}
-#fileInput{display:none;}
-.song{background:#1e293b;padding:10px;margin:8px 0;border-radius:12px;display:flex;justify-content:space-between;align-items:center;}
-button{background:#3b82f6;border:none;padding:6px 12px;border-radius:20px;color:white;cursor:pointer;margin-left:8px;}
-.delete{background:#ef4444;}
-audio{width:100%;margin-top:20px;}
-</style>
-</head>
-<body>
-<h1>🎵 我的音乐库</h1>
-<div class="upload-btn" id="uploadBtn">📤 上传 MP3 音乐</div>
-<input type="file" id="fileInput" accept="audio/mpeg" multiple>
-<div id="songList"></div>
-<audio id="audioPlayer" controls style="display:none;"></audio>
-<script>
-const ADMIN_PASSWORD = "music2025";
-async function loadSongs(){
-    const res=await fetch('/api/songs');
-    const data=await res.json();
-    const container=document.getElementById('songList');
-    container.innerHTML='';
-    data.songs.forEach(song=>{
-        const div=document.createElement('div');
-        div.className='song';
-        div.innerHTML=\`<span>🎵 \${song.name}</span><div><button onclick="playSong('\${song.url}')">播放</button><button class="delete" onclick="deleteSong('\${song.id}')">删除</button></div>\`;
-        container.appendChild(div);
-    });
-}
-function playSong(url){ const audio=document.getElementById('audioPlayer'); audio.src=url; audio.style.display='block'; audio.play(); }
-async function deleteSong(id){
-    const pwd=prompt('请输入删除密码');
-    if(pwd!==ADMIN_PASSWORD){ alert('密码错误'); return; }
-    const res=await fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:pwd})});
-    const result=await res.json();
-    if(result.success){ alert('删除成功'); loadSongs(); } else { alert('删除失败：'+result.error); }
-}
-document.getElementById('uploadBtn').onclick=()=>{ document.getElementById('fileInput').click(); };
-document.getElementById('fileInput').onchange=async (e)=>{
-    const files=e.target.files;
-    for(let file of files){
-        const formData=new FormData();
-        formData.append('song',file);
-        const res=await fetch('/api/upload',{method:'POST',body:formData});
-        const result=await res.json();
-        alert(result.success?\`✅ \${result.name} 上传成功\`:\`❌ 上传失败\`);
-    }
-    loadSongs();
-    e.target.value='';
-};
-loadSongs();
-</script>
-</body>
-</html>`;
-}
