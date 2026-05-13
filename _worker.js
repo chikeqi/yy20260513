@@ -1,7 +1,6 @@
 // _worker.js - 完整版音乐网站
-const ADMIN_PASSWORD = "music2025";  // 默认密码
+const ADMIN_PASSWORD = "music2025";
 
-// 简单的 SVG favicon
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8b5cf6"/><text x="50" y="67" text-anchor="middle" fill="white" font-size="50" font-family="Arial">🎵</text></svg>`;
 
 // 修改密码页面
@@ -13,7 +12,7 @@ body{background:#0a0c15;font-family:system-ui;display:flex;justify-content:cente
 h2{color:#eef2ff;margin-bottom:20px;}
 input{width:100%;padding:12px;margin:10px 0;border-radius:40px;background:#1e293b;border:none;color:white;}
 button{background:#3b82f6;border:none;padding:12px;border-radius:40px;color:white;cursor:pointer;width:100%;}
-.back{background:#334155;margin-top:10px;text-align:center;display:block;text-decoration:none;}
+.back{background:#334155;margin-top:10px;text-align:center;display:block;text-decoration:none;padding:12px;border-radius:40px;color:white;}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:8px 20px;border-radius:40px;display:none;}
 </style>
 </head>
@@ -77,7 +76,7 @@ document.getElementById('logoUrl').oninput=updatePreview;document.getElementById
 </body>
 </html>`;
 
-// 首页 HTML（紧凑版）
+// 首页 HTML（美化版）
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -88,87 +87,110 @@ const HTML_CONTENT = `<!DOCTYPE html>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #0a0c15;
+            background: linear-gradient(135deg, #0a0c15 0%, #1a1d2e 100%);
             font-family: system-ui, -apple-system, sans-serif;
             color: #eef2ff;
-            padding: 12px;
+            min-height: 100vh;
+            padding: 20px;
         }
-        /* 顶部：Logo 在左上角 */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
+        /* 顶部标题居中 */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
         }
-        .logo-area {
-            cursor: pointer;
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
         }
-        .logo-img {
-            width: 120px;
-            height: 120px;
-            border-radius: 24px;
-            object-fit: cover;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .admin-link {
-            background: rgba(255,255,255,0.05);
-            padding: 6px 12px;
-            border-radius: 20px;
+        .header p {
             font-size: 0.7rem;
             color: #6b7280;
-            text-decoration: none;
+            margin-top: 5px;
         }
-        /* 上传卡片 - 紧凑 */
-        .upload-card {
-            background: rgba(18, 20, 32, 0.6);
+        /* Logo 区域 - 左上角 */
+        .logo-area {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            cursor: pointer;
+            z-index: 100;
+        }
+        .logo-img {
+            width: 60px;
+            height: 60px;
             border-radius: 16px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .logo-img:hover { transform: scale(1.02); }
+        /* 上传和播放器 - 横向排放 */
+        .top-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
-            gap: 10px;
+        }
+        .upload-card {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(18, 20, 32, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .upload-btn {
             background: linear-gradient(135deg, #8b5cf6, #3b82f6);
             border: none;
-            padding: 8px 18px;
-            border-radius: 30px;
+            padding: 8px 20px;
+            border-radius: 40px;
             font-weight: 500;
             color: white;
             cursor: pointer;
             font-size: 0.85rem;
+            white-space: nowrap;
         }
         .upload-note {
             font-size: 0.65rem;
             color: #6b7280;
         }
         #fileInput { display: none; }
-        /* 播放器 - 紧凑 */
+        /* 播放器卡片 */
         .player-card {
+            flex: 2;
+            min-width: 260px;
             background: rgba(18, 20, 32, 0.6);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .cover-art {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 12px;
             object-fit: cover;
         }
         .track-info {
             flex: 1;
-            min-width: 120px;
+            min-width: 100px;
         }
-        .track-title { font-size: 0.9rem; font-weight: 600; }
-        .track-artist { font-size: 0.7rem; color: #a78bfa; }
-        .progress-area { flex: 2; min-width: 150px; }
+        .track-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-artist { font-size: 0.65rem; color: #a78bfa; }
+        .progress-area { flex: 2; min-width: 120px; }
         .progress-bg {
             background: #2d2a3e;
             height: 4px;
@@ -181,67 +203,108 @@ const HTML_CONTENT = `<!DOCTYPE html>
             height: 4px;
             border-radius: 10px;
         }
-        .time-row { display: flex; justify-content: space-between; font-size: 0.6rem; margin-top: 4px; }
-        .controls { display: flex; gap: 8px; }
+        .time-row { display: flex; justify-content: space-between; font-size: 0.6rem; margin-top: 4px; color: #9ca3af; }
+        .controls { display: flex; gap: 6px; }
         .ctrl-btn {
             background: #1e1b2e;
             border: none;
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: white;
             cursor: pointer;
+            transition: 0.1s;
         }
-        .play-btn { background: #8b5cf6; width: 40px; height: 40px; font-size: 1.1rem; }
+        .ctrl-btn:active { transform: scale(0.95); }
+        .play-btn { background: #8b5cf6; width: 38px; height: 38px; font-size: 1rem; }
         /* 模式栏 */
         .mode-bar {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         .mode-btn {
             background: #1e293b;
             border: none;
-            padding: 5px 16px;
+            padding: 5px 20px;
             border-radius: 30px;
             color: #cbd5e1;
             cursor: pointer;
             font-size: 0.75rem;
+            transition: 0.2s;
         }
-        .mode-btn.active { background: #3b82f6; color: white; }
-        /* 音乐列表 - 两列紧凑 */
+        .mode-btn.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 0 8px #3b82f6;
+        }
+        /* 音乐列表 - 横向滚动 3 列 */
+        .music-section {
+            margin-top: 10px;
+        }
+        .music-section h3 {
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
         .music-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
         }
         .music-item {
             background: #11131f;
-            border-radius: 12px;
-            padding: 8px;
+            border-radius: 16px;
+            padding: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             border: 1px solid #1f2937;
+            transition: 0.2s;
+        }
+        .music-item:hover {
+            background: #1a1d2e;
+            transform: translateY(-2px);
         }
         .music-cover {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             object-fit: cover;
         }
-        .music-name { flex: 1; font-size: 0.75rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .music-actions { display: flex; gap: 6px; }
+        .music-name {
+            flex: 1;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .music-actions {
+            display: flex;
+            gap: 8px;
+        }
         .icon-btn {
             background: none;
             border: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             color: #cbd5e1;
+            padding: 4px;
         }
         .delete-btn { color: #f87171; }
+        /* 响应式：小于800px时改为2列 */
+        @media (max-width: 800px) {
+            .music-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 550px) {
+            .music-grid { grid-template-columns: 1fr; }
+            .top-row { flex-direction: column; }
+            .logo-area { position: static; text-align: center; margin-bottom: 15px; }
+            .header h1 { font-size: 1.4rem; }
+        }
         /* 弹窗 */
         .modal {
             display: none;
@@ -255,12 +318,14 @@ const HTML_CONTENT = `<!DOCTYPE html>
         }
         .modal-content {
             background: #0f111f;
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 24px;
+            padding: 24px;
             width: 90%;
             max-width: 300px;
             text-align: center;
+            border: 1px solid #334155;
         }
+        .modal-content h3 { margin-bottom: 10px; }
         .modal-content input {
             width: 100%;
             padding: 10px;
@@ -273,10 +338,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
         .modal-content button {
             background: #3b82f6;
             border: none;
-            padding: 6px 18px;
+            padding: 8px 20px;
             border-radius: 30px;
             color: white;
-            margin: 4px;
+            margin: 5px;
             cursor: pointer;
         }
         .toast {
@@ -286,57 +351,65 @@ const HTML_CONTENT = `<!DOCTYPE html>
             transform: translateX(-50%);
             background: #1e293b;
             color: #bef264;
-            padding: 6px 16px;
+            padding: 8px 20px;
             border-radius: 30px;
             font-size: 0.75rem;
             display: none;
             z-index: 1100;
         }
-        @media (max-width: 500px) {
-            .music-grid { grid-template-columns: 1fr; }
-            .player-card { flex-direction: column; align-items: stretch; text-align: center; }
-            .controls { justify-content: center; }
-        }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <div class="logo-area" id="logoArea">
-            <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/120/120" alt="logo">
-        </div>
-        <a href="/admin" class="admin-link">⚙️ 管理</a>
+    <!-- Logo 左上角 -->
+    <div class="logo-area" id="logoArea">
+        <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/60/60" alt="logo">
     </div>
 
-    <div class="upload-card">
-        <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
-        <span class="upload-note">MP3格式，操作需密码</span>
-        <input type="file" id="fileInput" accept="audio/mpeg" multiple>
+    <!-- 顶部标题居中 -->
+    <div class="header">
+        <h1>🎵 音乐库</h1>
+        <p>云端收藏 · 永久保存</p>
     </div>
 
-    <div class="player-card">
-        <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/50/50">
-        <div class="track-info">
-            <div class="track-title" id="nowTitle">未选择歌曲</div>
-            <div class="track-artist" id="nowArtist">点击列表播放</div>
+    <!-- 上传和播放器横向排列 -->
+    <div class="top-row">
+        <div class="upload-card">
+            <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
+            <span class="upload-note">MP3 | 需密码</span>
+            <input type="file" id="fileInput" accept="audio/mpeg" multiple>
         </div>
-        <div class="progress-area">
-            <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="time-row"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
-        </div>
-        <div class="controls">
-            <button class="ctrl-btn" id="prevBtn">⏮</button>
-            <button class="ctrl-btn play-btn" id="playPauseBtn">▶</button>
-            <button class="ctrl-btn" id="nextBtn">⏭</button>
+
+        <div class="player-card">
+            <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/48/48">
+            <div class="track-info">
+                <div class="track-title" id="nowTitle">未选择歌曲</div>
+                <div class="track-artist" id="nowArtist">点击列表播放</div>
+            </div>
+            <div class="progress-area">
+                <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="time-row"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
+            </div>
+            <div class="controls">
+                <button class="ctrl-btn" id="prevBtn">⏮</button>
+                <button class="ctrl-btn play-btn" id="playPauseBtn">▶</button>
+                <button class="ctrl-btn" id="nextBtn">⏭</button>
+            </div>
         </div>
     </div>
 
+    <!-- 模式切换 -->
     <div class="mode-bar">
-        <button class="mode-btn active" data-mode="all">全部循环</button>
-        <button class="mode-btn" data-mode="single">单曲循环</button>
+        <button class="mode-btn active" data-mode="all">🎶 全部循环</button>
+        <button class="mode-btn" data-mode="single">🔂 单曲循环</button>
     </div>
 
-    <div class="music-grid" id="musicList"></div>
+    <!-- 音乐列表 3列 -->
+    <div class="music-section">
+        <h3>📻 我的音乐库</h3>
+        <div class="music-grid" id="musicList"></div>
+    </div>
 
+    <!-- 密码弹窗 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
             <h3>🔐 需要密码</h3>
@@ -389,7 +462,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
             audio.load();
             document.getElementById("nowTitle").innerText = song.name;
             document.getElementById("nowArtist").innerText = song.artist || "云端音乐";
-            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/50/50";
+            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/48/48";
             audio.play().then(() => { isPlaying = true; updatePlayButton(); }).catch(() => { isPlaying = false; updatePlayButton(); });
         }
 
@@ -445,7 +518,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
             const container = document.getElementById("musicList");
             if (!container) return;
             if (!songsList.length) {
-                container.innerHTML = "<div style='grid-column:1/-1; text-align:center; color:#6b7280; padding:20px;'>🎧 暂无音乐，点击上传</div>";
+                container.innerHTML = "<div style='grid-column:1/-1; text-align:center; color:#6b7280; padding:30px;'>🎧 暂无音乐，点击上传</div>";
                 return;
             }
             container.innerHTML = "";
@@ -454,7 +527,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 const div = document.createElement("div");
                 div.className = "music-item";
                 div.innerHTML = \`
-                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/36/36'}" onerror="this.src='https://picsum.photos/id/26/36/36'">
+                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/40/40'}" onerror="this.src='https://picsum.photos/id/26/40/40'">
                     <div class="music-name">\${escapeHtml(song.name)}</div>
                     <div class="music-actions">
                         <button class="icon-btn play-song" data-id="\${song.id}">▶</button>
@@ -501,12 +574,12 @@ const HTML_CONTENT = `<!DOCTYPE html>
             if (data.success && data.config) {
                 logoConfig = data.config;
                 const logoImg = document.getElementById("logoImg");
-                const logoArea = document.getElementById("logoArea");
                 if (logoConfig.imgUrl && logoConfig.imgUrl.trim()) {
                     logoImg.src = logoConfig.imgUrl;
                 } else {
-                    logoImg.src = "https://picsum.photos/id/20/120/120";
+                    logoImg.src = "https://picsum.photos/id/20/60/60";
                 }
+                const logoArea = document.getElementById("logoArea");
                 logoArea.style.cursor = logoConfig.linkUrl ? "pointer" : "default";
                 logoArea.onclick = () => { if (logoConfig.linkUrl) window.open(logoConfig.linkUrl, "_blank"); };
             }
@@ -599,7 +672,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
 </body>
 </html>`;
 
-// 存储密码的变量（实际应存在 KV 中，简化版用全局变量）
 let currentPassword = ADMIN_PASSWORD;
 
 export default {
@@ -617,40 +689,34 @@ export default {
             return new Response(null, { headers: corsHeaders });
         }
         
-        // favicon
         if (path === "/favicon.ico") {
-            return new Response(FAVICON_SVG, {
-                headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" }
-            });
+            return new Response(FAVICON_SVG, { headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" } });
         }
         
-        // 管理页面 - 修改密码
         if (path === "/admin") {
             return new Response(ADMIN_PAGE, { headers: { "Content-Type": "text/html" } });
         }
         
-        // 管理页面 - 更换 Logo
         if (path === "/picture") {
             return new Response(PICTURE_PAGE, { headers: { "Content-Type": "text/html" } });
         }
         
-        // API: 修改密码
         if (path === "/api/admin/password" && request.method === "POST") {
             try {
                 const { old, new: newPwd } = await request.json();
-                if (old !== currentPassword) {
+                const storedPwd = await env.music_kv.get("admin_password");
+                const validPwd = storedPwd || currentPassword;
+                if (old !== validPwd) {
                     return Response.json({ success: false, error: "当前密码错误" }, { headers: corsHeaders });
                 }
-                currentPassword = newPwd;
-                // 可选：持久化到 KV
                 await env.music_kv.put("admin_password", newPwd);
+                currentPassword = newPwd;
                 return Response.json({ success: true }, { headers: corsHeaders });
             } catch (error) {
                 return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
             }
         }
         
-        // API: 获取 Logo 配置
         if (path === "/api/logo/get" && request.method === "GET") {
             try {
                 let config = await env.music_kv.get("logo_config", "json");
@@ -661,7 +727,6 @@ export default {
             }
         }
         
-        // API: 保存 Logo 配置
         if (path === "/api/logo/save" && request.method === "POST") {
             try {
                 const { imgUrl, linkUrl } = await request.json();
@@ -672,7 +737,6 @@ export default {
             }
         }
         
-        // API: 重置 Logo
         if (path === "/api/logo/reset" && request.method === "POST") {
             try {
                 await env.music_kv.put("logo_config", JSON.stringify({ imgUrl: "", linkUrl: "" }));
@@ -682,7 +746,6 @@ export default {
             }
         }
         
-        // 获取歌曲列表
         if (path === "/api/songs" && request.method === "GET") {
             try {
                 const list = await env.music_kv.list();
@@ -710,7 +773,6 @@ export default {
             }
         }
         
-        // 播放音乐
         if (path.startsWith("/api/play/") && request.method === "GET") {
             const songId = decodeURIComponent(path.replace("/api/play/", ""));
             try {
@@ -724,12 +786,10 @@ export default {
             }
         }
         
-        // 上传音乐（需要前端密码验证，后端也要验证）
         if (path === "/api/upload" && request.method === "POST") {
             try {
                 const formData = await request.formData();
                 const songFile = formData.get("song");
-                // 注意：密码验证在前端已经做过，后端可选再做一次
                 if (!songFile || !songFile.name.toLowerCase().endsWith(".mp3")) {
                     return Response.json({ success: false, error: "请上传 MP3 文件" }, { headers: corsHeaders });
                 }
@@ -750,11 +810,12 @@ export default {
             }
         }
         
-        // 删除音乐
         if (path === "/api/delete" && request.method === "POST") {
             try {
                 const { id, password } = await request.json();
-                if (password !== currentPassword) {
+                const storedPwd = await env.music_kv.get("admin_password");
+                const validPwd = storedPwd || currentPassword;
+                if (password !== validPwd) {
                     return Response.json({ success: false, error: "密码错误" }, { headers: corsHeaders });
                 }
                 await env.music_kv.delete(id);
@@ -765,11 +826,8 @@ export default {
             }
         }
         
-        // 返回首页
         if (path === "/" || path === "") {
-            return new Response(HTML_CONTENT, {
-                headers: { "Content-Type": "text/html", ...corsHeaders }
-            });
+            return new Response(HTML_CONTENT, { headers: { "Content-Type": "text/html", ...corsHeaders } });
         }
         
         return new Response("Not found", { status: 404 });
