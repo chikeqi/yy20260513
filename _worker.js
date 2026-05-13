@@ -76,7 +76,7 @@ document.getElementById('logoUrl').oninput=updatePreview;document.getElementById
 </body>
 </html>`;
 
-// 首页 HTML（美化版）
+// 首页 HTML
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -93,7 +93,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             min-height: 100vh;
             padding: 20px;
         }
-        /* 顶部标题居中 */
         .header {
             text-align: center;
             margin-bottom: 25px;
@@ -111,7 +110,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             color: #6b7280;
             margin-top: 5px;
         }
-        /* Logo 区域 - 左上角 */
         .logo-area {
             position: fixed;
             top: 15px;
@@ -128,7 +126,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             transition: transform 0.2s;
         }
         .logo-img:hover { transform: scale(1.02); }
-        /* 上传和播放器 - 横向排放 */
         .top-row {
             display: flex;
             gap: 15px;
@@ -164,7 +161,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             color: #6b7280;
         }
         #fileInput { display: none; }
-        /* 播放器卡片 */
         .player-card {
             flex: 2;
             min-width: 260px;
@@ -218,7 +214,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
         }
         .ctrl-btn:active { transform: scale(0.95); }
         .play-btn { background: #8b5cf6; width: 38px; height: 38px; font-size: 1rem; }
-        /* 模式栏 */
         .mode-bar {
             display: flex;
             justify-content: center;
@@ -240,7 +235,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             color: white;
             box-shadow: 0 0 8px #3b82f6;
         }
-        /* 音乐列表 - 横向滚动 3 列 */
         .music-section {
             margin-top: 10px;
         }
@@ -295,7 +289,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             padding: 4px;
         }
         .delete-btn { color: #f87171; }
-        /* 响应式：小于800px时改为2列 */
         @media (max-width: 800px) {
             .music-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -305,7 +298,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             .logo-area { position: static; text-align: center; margin-bottom: 15px; }
             .header h1 { font-size: 1.4rem; }
         }
-        /* 弹窗 */
         .modal {
             display: none;
             position: fixed;
@@ -360,23 +352,20 @@ const HTML_CONTENT = `<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <!-- Logo 左上角 -->
     <div class="logo-area" id="logoArea">
         <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/60/60" alt="logo">
     </div>
 
-    <!-- 顶部标题居中 -->
     <div class="header">
         <h1>🎵 音乐库</h1>
         <p>云端收藏 · 永久保存</p>
     </div>
 
-    <!-- 上传和播放器横向排列 -->
     <div class="top-row">
         <div class="upload-card">
             <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
             <span class="upload-note">MP3 | 需密码</span>
-            <input type="file" id="fileInput" accept="audio/mpeg" multiple>
+            <input type="file" id="fileInput" accept="audio/mpeg" multiple style="display:none">
         </div>
 
         <div class="player-card">
@@ -397,19 +386,16 @@ const HTML_CONTENT = `<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- 模式切换 -->
     <div class="mode-bar">
         <button class="mode-btn active" data-mode="all">🎶 全部循环</button>
         <button class="mode-btn" data-mode="single">🔂 单曲循环</button>
     </div>
 
-    <!-- 音乐列表 3列 -->
     <div class="music-section">
         <h3>📻 我的音乐库</h3>
         <div class="music-grid" id="musicList"></div>
     </div>
 
-    <!-- 密码弹窗 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
             <h3>🔐 需要密码</h3>
@@ -430,8 +416,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
         let currentIndex = 0;
         let audio = new Audio();
         let isPlaying = false;
-        let pendingAction = null;
-        let pendingFiles = null;
+        let pendingDeleteId = null;
         let logoConfig = { imgUrl: "", linkUrl: "" };
 
         function showToast(msg) {
@@ -545,7 +530,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
             });
             document.querySelectorAll(".delete-song").forEach(btn => {
                 btn.onclick = () => {
-                    pendingAction = { type: "delete", id: btn.getAttribute("data-id") };
+                    pendingDeleteId = btn.getAttribute("data-id");
                     document.getElementById("modalActionText").innerText = "请输入删除密码";
                     document.getElementById("passwordModal").style.display = "flex";
                     document.getElementById("modalPassword").value = "";
@@ -585,13 +570,31 @@ const HTML_CONTENT = `<!DOCTYPE html>
             }
         }
 
-        function triggerUpload() {
-            pendingAction = "upload";
-            document.getElementById("modalActionText").innerText = "请输入上传密码";
-            document.getElementById("passwordModal").style.display = "flex";
-            document.getElementById("modalPassword").value = "";
+        // 密码验证成功后弹出文件选择框
+        function verifyAndOpenFilePicker() {
+            const pwd = document.getElementById("modalPassword").value;
+            if (!pwd) {
+                showToast("请输入密码");
+                return false;
+            }
+            // 验证密码是否正确（通过一个简单的API验证）
+            fetch("/api/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: pwd })
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    // 密码正确，关闭弹窗，弹出文件选择框
+                    document.getElementById("passwordModal").style.display = "none";
+                    document.getElementById("modalPassword").value = "";
+                    document.getElementById("fileInput").click();
+                } else {
+                    showToast("密码错误");
+                }
+            }).catch(() => showToast("验证失败"));
         }
 
+        // 执行上传
         async function doUpload(files) {
             for (let f of files) {
                 if (!f.name.toLowerCase().endsWith(".mp3")) { showToast("跳过: " + f.name); continue; }
@@ -604,16 +607,29 @@ const HTML_CONTENT = `<!DOCTYPE html>
         }
 
         function bindEvents() {
-            document.getElementById("uploadBtn").onclick = triggerUpload;
+            // 点击上传按钮：弹出密码框
+            document.getElementById("uploadBtn").onclick = () => {
+                document.getElementById("modalActionText").innerText = "请输入上传密码";
+                document.getElementById("passwordModal").style.display = "flex";
+                document.getElementById("modalPassword").value = "";
+                // 临时保存确认回调
+                window.pendingUploadConfirm = true;
+            };
+            
+            // 文件选择后上传
             const fileInput = document.getElementById("fileInput");
-            fileInput.onchange = (e) => {
-                pendingFiles = Array.from(e.target.files);
-                triggerUpload();
+            fileInput.onchange = async (e) => {
+                const files = Array.from(e.target.files);
+                if (files.length) {
+                    await doUpload(files);
+                }
                 fileInput.value = "";
             };
+            
             document.getElementById("playPauseBtn").onclick = togglePlay;
             document.getElementById("nextBtn").onclick = nextTrack;
             document.getElementById("prevBtn").onclick = prevTrack;
+            
             const progressBg = document.getElementById("progressBg");
             audio.ontimeupdate = () => {
                 if (audio.duration) {
@@ -630,6 +646,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 }
             };
             audio.onended = nextTrack;
+            
             document.querySelectorAll(".mode-btn").forEach(btn => {
                 btn.onclick = () => {
                     document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
@@ -638,27 +655,48 @@ const HTML_CONTENT = `<!DOCTYPE html>
                     showToast(playMode === "all" ? "全部循环" : "单曲循环");
                 };
             });
+            
+            // 密码弹窗确认按钮
             const modal = document.getElementById("passwordModal");
             document.getElementById("modalConfirmBtn").onclick = async () => {
                 const pwd = document.getElementById("modalPassword").value;
                 if (!pwd) { showToast("请输入密码"); return; }
-                if (pendingAction === "upload") {
-                    if (pendingFiles && pendingFiles.length) {
-                        await doUpload(pendingFiles);
-                        pendingFiles = null;
+                
+                // 如果是删除操作
+                if (pendingDeleteId) {
+                    const result = await deleteSongReq(pendingDeleteId, pwd);
+                    if (result.success) {
+                        showToast("删除成功");
+                        await refreshAll();
+                        pendingDeleteId = null;
+                    } else {
+                        showToast("删除失败: " + (result.error || "密码错误"));
                     }
-                } else if (pendingAction && pendingAction.type === "delete") {
-                    const result = await deleteSongReq(pendingAction.id, pwd);
-                    if (result.success) { showToast("删除成功"); await refreshAll(); }
-                    else showToast("删除失败: " + (result.error || "密码错误"));
+                    modal.style.display = "none";
+                    document.getElementById("modalPassword").value = "";
+                    return;
                 }
-                modal.style.display = "none";
-                pendingAction = null;
+                
+                // 上传操作：验证密码
+                const verifyRes = await fetch("/api/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: pwd })
+                });
+                const verifyData = await verifyRes.json();
+                if (verifyData.success) {
+                    modal.style.display = "none";
+                    document.getElementById("modalPassword").value = "";
+                    document.getElementById("fileInput").click();
+                } else {
+                    showToast("密码错误");
+                }
             };
+            
             document.getElementById("modalCancelBtn").onclick = () => {
                 modal.style.display = "none";
-                pendingAction = null;
-                pendingFiles = null;
+                document.getElementById("modalPassword").value = "";
+                pendingDeleteId = null;
             };
         }
 
@@ -699,6 +737,22 @@ export default {
         
         if (path === "/picture") {
             return new Response(PICTURE_PAGE, { headers: { "Content-Type": "text/html" } });
+        }
+        
+        // 验证密码 API
+        if (path === "/api/verify" && request.method === "POST") {
+            try {
+                const { password } = await request.json();
+                const storedPwd = await env.music_kv.get("admin_password");
+                const validPwd = storedPwd || currentPassword;
+                if (password === validPwd) {
+                    return Response.json({ success: true }, { headers: corsHeaders });
+                } else {
+                    return Response.json({ success: false, error: "密码错误" }, { headers: corsHeaders });
+                }
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
+            }
         }
         
         if (path === "/api/admin/password" && request.method === "POST") {
