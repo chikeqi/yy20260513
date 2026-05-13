@@ -1,12 +1,390 @@
 <!DOCTYPE html>
-<html>
-<head><title>Test</title></head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>云音盒 · 个人音乐站</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(15, 25, 45, 0.7);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            border: 1px dashed #3b82f6;
+        }
+
+        .file-label {
+            background: #3b82f6;
+            padding: 0.7rem 1.2rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            color: white;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .mode-bar {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            background: #1e293b;
+            border: none;
+            padding: 0.5rem 1.8rem;
+            border-radius: 3rem;
+            color: #cbd5e1;
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .player-panel {
+            background: rgba(15, 25, 45, 0.75);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .cover-mini {
+            width: 100px;
+            height: 100px;
+            border-radius: 1.5rem;
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+
+        .song-title-player {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .ctrl-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .ctrl-btn {
+            background: #1e293b;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 60px;
+            font-size: 1.3rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .play-btn {
+            background: #3b82f6;
+            width: 60px;
+            height: 60px;
+        }
+
+        .music-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #e2e8f0;
+        }
+
+        .music-table th, .music-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #f87171;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            background: #1e293b;
+            border-radius: 2rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .modal-card input {
+            padding: 0.5rem;
+            margin: 1rem 0;
+            border-radius: 2rem;
+            border: none;
+            width: 100%;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #bef264;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            display: none;
+        }
+    </style>
+</head>
 <body>
-<h1>Static Page</h1>
+<div class="app-container">
+    <div class="header">
+        <h1>🎵 云音盒 · 永久音乐库</h1>
+        <div class="sub">上传 MP3 → 自动保存到 KV | 删除需密码</div>
+        <div class="upload-area">
+            <label class="file-label" id="uploadLabel">📤 选择音乐文件 (MP3)</label>
+            <input type="file" id="fileInput" accept="audio/mpeg" multiple>
+        </div>
+    </div>
+
+    <div class="mode-bar">
+        <button class="mode-btn active" data-mode="all">🎧 全部循环</button>
+        <button class="mode-btn" data-mode="single">🔂 单曲循环</button>
+    </div>
+
+    <div class="player-panel">
+        <img id="playerCover" class="cover-mini" src="https://picsum.photos/id/106/100/100">
+        <div class="song-title-player" id="playerTitle">未选择歌曲</div>
+        <div class="ctrl-buttons">
+            <button class="ctrl-btn" id="prevBtn">⏮</button>
+            <button class="ctrl-btn play-btn" id="playPauseBtn">▶</button>
+            <button class="ctrl-btn" id="nextBtn">⏭</button>
+        </div>
+        <div><span id="currentTime">0:00</span> / <span id="duration">0:00</span></div>
+    </div>
+
+    <table class="music-table" id="musicTable">
+        <thead><tr><th>#</th><th>歌曲名</th><th>操作</th></tr></thead>
+        <tbody id="playlistBody"></tbody>
+    </table>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-card">
+        <h3>删除确认</h3>
+        <input type="password" id="deletePassword" placeholder="输入删除密码">
+        <button id="confirmDeleteBtn">确认</button>
+        <button id="cancelModalBtn">取消</button>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
+
 <script>
-fetch('/api/ping')
-  .then(r => r.text())
-  .then(data => console.log('API response:', data));
+    const ADMIN_PASSWORD = "music2025";
+    let playMode = "all";
+    let currentPlaylist = [];
+    let currentIndex = 0;
+    let audio = new Audio();
+    let isPlaying = false;
+    let pendingDeleteId = null;
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2000);
+    }
+
+    async function fetchSongs() {
+        const res = await fetch('/api/songs');
+        const data = await res.json();
+        return data.songs || [];
+    }
+
+    async function uploadSong(file) {
+        const formData = new FormData();
+        formData.append('song', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        return res.json();
+    }
+
+    async function deleteSong(id, pwd) {
+        const res = await fetch('/api/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, password: pwd })
+        });
+        return res.json();
+    }
+
+    async function refreshList() {
+        currentPlaylist = await fetchSongs();
+        const tbody = document.getElementById('playlistBody');
+        tbody.innerHTML = '';
+        currentPlaylist.forEach((song, i) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = i + 1;
+            row.insertCell(1).innerText = song.name;
+            const actionCell = row.insertCell(2);
+            const playBtn = document.createElement('button');
+            playBtn.innerText = '播放';
+            playBtn.onclick = () => playSong(i);
+            const delBtn = document.createElement('button');
+            delBtn.innerText = '删除';
+            delBtn.className = 'delete-btn';
+            delBtn.onclick = () => {
+                pendingDeleteId = song.id;
+                document.getElementById('deleteModal').style.display = 'flex';
+            };
+            actionCell.appendChild(playBtn);
+            actionCell.appendChild(delBtn);
+        });
+    }
+
+    function playSong(index) {
+        if (!currentPlaylist[index]) return;
+        currentIndex = index;
+        const song = currentPlaylist[currentIndex];
+        audio.src = song.url;
+        document.getElementById('playerTitle').innerText = song.name;
+        audio.play();
+        isPlaying = true;
+        document.getElementById('playPauseBtn').innerText = '⏸';
+    }
+
+    function nextTrack() {
+        if (playMode === 'single') {
+            audio.currentTime = 0;
+            audio.play();
+            return;
+        }
+        let next = currentIndex + 1;
+        if (next >= currentPlaylist.length) next = 0;
+        playSong(next);
+    }
+
+    document.getElementById('playPauseBtn').onclick = () => {
+        if (isPlaying) {
+            audio.pause();
+            document.getElementById('playPauseBtn').innerText = '▶';
+        } else {
+            audio.play();
+            document.getElementById('playPauseBtn').innerText = '⏸';
+        }
+        isPlaying = !isPlaying;
+    };
+    document.getElementById('nextBtn').onclick = nextTrack;
+    document.getElementById('prevBtn').onclick = () => {
+        let prev = currentIndex - 1;
+        if (prev < 0) prev = currentPlaylist.length - 1;
+        playSong(prev);
+    };
+
+    audio.onended = () => nextTrack();
+    audio.ontimeupdate = () => {
+        if (audio.duration) {
+            document.getElementById('currentTime').innerText = Math.floor(audio.currentTime);
+            document.getElementById('duration').innerText = Math.floor(audio.duration);
+        }
+    };
+
+    document.getElementById('fileInput').onchange = async (e) => {
+        for (let file of e.target.files) {
+            if (file.name.endsWith('.mp3')) {
+                await uploadSong(file);
+            }
+        }
+        await refreshList();
+        e.target.value = '';
+    };
+
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+        const pwd = document.getElementById('deletePassword').value;
+        if (pwd !== ADMIN_PASSWORD) {
+            showToast('密码错误');
+            return;
+        }
+        if (pendingDeleteId) {
+            await deleteSong(pendingDeleteId, pwd);
+            await refreshList();
+            pendingDeleteId = null;
+        }
+        document.getElementById('deleteModal').style.display = 'none';
+        document.getElementById('deletePassword').value = '';
+    };
+    document.getElementById('cancelModalBtn').onclick = () => {
+        document.getElementById('deleteModal').style.display = 'none';
+        document.getElementById('deletePassword').value = '';
+    };
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            playMode = btn.dataset.mode;
+        };
+    });
+
+    refreshList();
 </script>
 </body>
 </html>
