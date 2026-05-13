@@ -1,6 +1,0 @@
-name = "music-site"
-pages_build_output_dir = "."
-
-[[kv_namespaces]]
-binding = "music_kv"
-id = "f0155d05f65749ef91984d2d38bece43"
