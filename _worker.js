@@ -1,5 +1,5 @@
 // _worker.js - 一个文件搞定所有功能
-const ADMIN_PASSWORD = "music2025";
+const ADMIN_PASSWORD = "ww123456";
 
 export default {
     async fetch(request, env, ctx) {
