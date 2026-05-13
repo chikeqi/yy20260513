@@ -1,5 +1,5 @@
-// _worker.js - 完整版音乐网站（电脑端恢复原样，移动端优化）
-const ADMIN_PASSWORD = "ww1234";
+// _worker.js - 完整版音乐网站
+const ADMIN_PASSWORD = "music2025";
 
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8b5cf6"/><text x="50" y="67" text-anchor="middle" fill="white" font-size="50" font-family="Arial">🎵</text></svg>`;
 
@@ -78,7 +78,7 @@ document.getElementById('logoUrl').oninput=updatePreview;document.getElementById
 </body>
 </html>`;
 
-// 首页 HTML
+// 首页 HTML（无封面，更简洁）
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -95,8 +95,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
             min-height: 100vh;
             padding: 20px;
         }
-        /* ========== 电脑端样式（默认） ========== */
-        /* 顶部标题 - 电脑端显示 */
+        /* 电脑端样式 */
         .header {
             text-align: center;
             margin-bottom: 25px;
@@ -114,7 +113,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             color: #6b7280;
             margin-top: 5px;
         }
-        /* Logo 左上角（电脑端） */
         .logo-area {
             position: fixed;
             top: 15px;
@@ -128,10 +126,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
             border-radius: 16px;
             object-fit: cover;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
         }
-        .logo-img:hover { transform: scale(1.02); }
-        /* 上传和播放器 - 横向排放（电脑端） */
         .top-row {
             display: flex;
             gap: 15px;
@@ -180,17 +175,12 @@ const HTML_CONTENT = `<!DOCTYPE html>
             flex-wrap: wrap;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .cover-art {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            object-fit: cover;
-        }
+        /* 播放器无封面 */
         .track-info {
             flex: 1;
             min-width: 120px;
         }
-        .track-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-title { font-size: 0.95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .track-artist { font-size: 0.7rem; color: #a78bfa; }
         .progress-area { flex: 2; min-width: 130px; }
         .progress-bg {
@@ -218,7 +208,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             cursor: pointer;
         }
         .play-btn { background: #8b5cf6; width: 44px; height: 44px; font-size: 1.1rem; }
-        /* 模式栏 */
         .mode-bar {
             display: flex;
             justify-content: center;
@@ -239,7 +228,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             color: white;
             box-shadow: 0 0 8px #3b82f6;
         }
-        /* 音乐列表 - 电脑端3列 */
         .music-section {
             margin-top: 10px;
         }
@@ -248,18 +236,19 @@ const HTML_CONTENT = `<!DOCTYPE html>
             margin-bottom: 15px;
             color: #cbd5e1;
         }
+        /* 音乐列表 - 无封面，纯文字 */
         .music-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 10px;
         }
         .music-item {
             background: #11131f;
-            border-radius: 16px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
             border: 1px solid #1f2937;
             transition: 0.2s;
         }
@@ -267,15 +256,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
             background: #1a1d2e;
             transform: translateY(-2px);
         }
-        .music-cover {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            object-fit: cover;
-        }
         .music-name {
             flex: 1;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
@@ -283,7 +266,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
         }
         .music-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
         .icon-btn {
             background: none;
@@ -291,10 +274,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
             font-size: 1rem;
             cursor: pointer;
             color: #cbd5e1;
-            padding: 5px;
+            padding: 5px 8px;
         }
         .delete-btn { color: #f87171; }
-        /* 弹窗 */
         .modal {
             display: none;
             position: fixed;
@@ -349,12 +331,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
             z-index: 1100;
         }
 
-        /* ========== 移动端样式（宽度 ≤ 768px） ========== */
+        /* 移动端样式 */
         @media (max-width: 768px) {
             body { padding: 16px; padding-bottom: 30px; }
-            /* 隐藏标题副标题 */
             .header { display: none; }
-            /* Logo 居中放大 */
             .logo-area {
                 position: static;
                 text-align: center;
@@ -365,14 +345,13 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 height: 100px;
                 border-radius: 28px;
             }
-            /* 上传和播放器改为竖向排列 */
             .top-row {
                 flex-direction: column;
                 gap: 12px;
                 margin-bottom: 20px;
             }
             .upload-card {
-                order: 2;  /* 上传卡片移到播放器下面 */
+                order: 2;
                 justify-content: center;
                 padding: 12px;
             }
@@ -382,37 +361,21 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 text-align: center;
                 padding: 16px;
             }
-            .cover-art {
-                width: 80px;
-                height: 80px;
-                border-radius: 20px;
-                margin-bottom: 8px;
-            }
             .track-info { text-align: center; }
-            .track-title { font-size: 1.1rem; white-space: normal; }
+            .track-title { font-size: 1rem; white-space: normal; }
             .controls { justify-content: center; margin-top: 5px; }
-            .ctrl-btn { width: 48px; height: 48px; font-size: 1.1rem; }
-            .play-btn { width: 56px; height: 56px; font-size: 1.3rem; }
-            /* 音乐列表改为1列 */
+            .ctrl-btn { width: 48px; height: 48px; font-size: 1rem; }
+            .play-btn { width: 56px; height: 56px; font-size: 1.2rem; }
             .music-grid {
                 grid-template-columns: 1fr;
-                gap: 10px;
+                gap: 8px;
             }
             .music-item {
-                padding: 12px 14px;
-            }
-            .music-cover {
-                width: 48px;
-                height: 48px;
+                padding: 14px 16px;
             }
             .mode-btn {
                 padding: 6px 20px;
                 font-size: 0.8rem;
-            }
-            /* 上传按钮放底部 - 通过 order 实现 */
-            .upload-card {
-                margin-top: 0;
-                margin-bottom: 10px;
             }
             .upload-btn {
                 flex: 1;
@@ -421,11 +384,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 font-size: 1rem;
             }
             .upload-note {
-                display: none;  /* 移动端隐藏提示文字节省空间 */
+                display: none;
             }
         }
-
-        /* 平板适配 */
         @media (min-width: 769px) and (max-width: 1024px) {
             .music-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -434,18 +395,15 @@ const HTML_CONTENT = `<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <!-- Logo 区域（电脑端左上角，移动端居中放大） -->
     <div class="logo-area" id="logoArea">
         <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/60/60" alt="logo">
     </div>
 
-    <!-- 标题（移动端隐藏） -->
     <div class="header">
         <h1>🎵 音乐库</h1>
         <p>云端收藏 · 永久保存</p>
     </div>
 
-    <!-- 上传和播放器区域 -->
     <div class="top-row">
         <div class="upload-card">
             <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
@@ -454,7 +412,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
         </div>
 
         <div class="player-card">
-            <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/52/52">
             <div class="track-info">
                 <div class="track-title" id="nowTitle">未选择歌曲</div>
                 <div class="track-artist" id="nowArtist">点击列表播放</div>
@@ -471,19 +428,16 @@ const HTML_CONTENT = `<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- 模式切换 -->
     <div class="mode-bar">
         <button class="mode-btn active" data-mode="all">🎶 全部循环</button>
         <button class="mode-btn" data-mode="single">🔂 单曲循环</button>
     </div>
 
-    <!-- 音乐列表 -->
     <div class="music-section">
         <h3>📻 我的音乐库</h3>
         <div class="music-grid" id="musicList"></div>
     </div>
 
-    <!-- 密码弹窗 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
             <h3>🔐 需要密码</h3>
@@ -535,7 +489,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
             audio.load();
             document.getElementById("nowTitle").innerText = song.name;
             document.getElementById("nowArtist").innerText = song.artist || "云端音乐";
-            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/80/80";
             audio.play().then(() => { isPlaying = true; updatePlayButton(); }).catch(() => { isPlaying = false; updatePlayButton(); });
         }
 
@@ -600,7 +553,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 const div = document.createElement("div");
                 div.className = "music-item";
                 div.innerHTML = \`
-                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/44/44'}" onerror="this.src='https://picsum.photos/id/26/44/44'">
                     <div class="music-name">\${escapeHtml(song.name)}</div>
                     <div class="music-actions">
                         <button class="icon-btn play-song" data-id="\${song.id}">▶</button>
@@ -674,7 +626,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 document.getElementById("modalActionText").innerText = "请输入上传密码";
                 document.getElementById("passwordModal").style.display = "flex";
                 document.getElementById("modalPassword").value = "";
-                window.pendingUpload = true;
             };
             
             const fileInput = document.getElementById("fileInput");
@@ -864,13 +815,12 @@ export default {
                     let metadata = await env.music_kv.get(metaKey, "json");
                     if (!metadata) {
                         const namePart = decodeURIComponent(key.name.replace(/^\d+_/, "").replace(/\.mp3$/, ""));
-                        metadata = { name: namePart, artist: "未知歌手", cover: "https://picsum.photos/id/" + Math.floor(Math.random() * 100) + "/100/100" };
+                        metadata = { name: namePart, artist: "未知歌手", cover: "" };
                     }
                     songs.push({
                         id: key.name,
                         name: metadata.name,
                         artist: metadata.artist,
-                        cover: metadata.cover,
                         url: "/api/play/" + encodeURIComponent(key.name)
                     });
                 }
@@ -909,7 +859,6 @@ export default {
                 const songName = songFile.name.replace(/\.mp3$/i, "");
                 await env.music_kv.put("meta_" + songId, JSON.stringify({
                     name: songName, artist: "上传者",
-                    cover: "https://picsum.photos/id/" + Math.floor(Math.random() * 100 + 10) + "/100/100",
                     uploadTime: timestamp
                 }));
                 return Response.json({ success: true, name: songName, id: songId }, { headers: corsHeaders });
