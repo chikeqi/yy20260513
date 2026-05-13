@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>云音盒 · 个人音乐站</title>
+    <title>音 乐</title>
     <style>
         * {
             margin: 0;
@@ -14,13 +14,74 @@
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             min-height: 100vh;
-            padding: 2rem 1rem;
+            padding: 0;
             font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
         }
 
+        /* 顶部导航栏 */
+        .navbar {
+            background: rgba(15, 25, 45, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-img {
+            height: 45px;
+            width: auto;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.02);
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* 设置按钮 */
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 主容器 */
         .app-container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 1.5rem 2rem 2rem;
         }
 
         /* 头部及上传区 */
@@ -35,14 +96,13 @@
         }
 
         h1 {
-            font-size: 1.9rem;
+            font-size: 1.8rem;
             font-weight: 700;
             background: linear-gradient(120deg, #c084fc, #60a5fa);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 0.5rem;
-            letter-spacing: -0.3px;
         }
 
         .sub {
@@ -56,7 +116,6 @@
             border-radius: 1.5rem;
             padding: 1rem;
             border: 1px dashed #3b82f6;
-            transition: 0.2s;
         }
 
         .file-input-wrap {
@@ -307,6 +366,34 @@
             cursor: pointer;
         }
 
+        /* Logo 设置弹窗 */
+        .logo-settings-modal .modal-card {
+            max-width: 420px;
+        }
+
+        .logo-settings-modal input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 2rem;
+            border: none;
+            background: #0f172a;
+            color: white;
+        }
+
+        .logo-preview {
+            margin: 15px 0;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 1rem;
+            text-align: center;
+        }
+
+        .logo-preview img {
+            max-height: 60px;
+            border-radius: 8px;
+        }
+
         .toast-msg {
             position: fixed;
             bottom: 20px;
@@ -323,6 +410,15 @@
         }
 
         @media (max-width: 640px) {
+            .navbar {
+                padding: 0.8rem 1rem;
+            }
+            .logo-text {
+                display: none;
+            }
+            .app-container {
+                padding: 1rem;
+            }
             .file-input-wrap {
                 flex-direction: column;
                 align-items: stretch;
@@ -340,6 +436,15 @@
     </style>
 </head>
 <body>
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <div class="logo-area" id="logoArea">
+            <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/80/80" alt="Logo" style="display: none;">
+            <span id="logoSpan" class="logo-text">🎵 云音盒</span>
+        </div>
+        <button class="settings-btn" id="logoSettingsBtn">⚙️ 更换Logo/外链</button>
+    </div>
+
 <div class="app-container">
     <div class="header">
         <h1>🎵 云音盒 · 永久音乐库</h1>
@@ -388,6 +493,7 @@
     </div>
 </div>
 
+<!-- 删除密码弹窗 -->
 <div id="deleteModal" class="modal">
     <div class="modal-card">
         <h3>🔐 删除授权</h3>
@@ -396,6 +502,26 @@
         <div><button id="confirmDeleteBtn">确认删除</button><button id="cancelModalBtn">取消</button></div>
     </div>
 </div>
+
+<!-- Logo 设置弹窗 -->
+<div id="logoSettingsModal" class="modal logo-settings-modal">
+    <div class="modal-card">
+        <h3>🖼️ Logo 设置</h3>
+        <p style="font-size:0.7rem; color:#94a3b8;">支持外链图片，点击Logo可跳转</p>
+        <input type="text" id="logoUrlInput" placeholder="Logo 图片地址 (外链)">
+        <input type="text" id="logoLinkInput" placeholder="点击 Logo 跳转的链接">
+        <div class="logo-preview" id="logoPreviewArea">
+            <span style="color:#94a3b8; font-size:0.7rem;">预览效果</span>
+            <img id="previewImg" style="max-height:50px; margin-top:8px; border-radius:8px;" src="">
+        </div>
+        <div>
+            <button id="saveLogoSettings">💾 保存</button>
+            <button id="closeLogoModal">取消</button>
+            <button id="resetLogoSettings">🔄 恢复默认</button>
+        </div>
+    </div>
+</div>
+
 <div id="toastMsg" class="toast-msg"></div>
 
 <script>
@@ -407,6 +533,59 @@
     let audio = new Audio();
     let isPlaying = false;
     let pendingDeleteId = null;
+
+    // Logo 配置 (从 localStorage 读取)
+    let logoConfig = {
+        imgUrl: "",
+        linkUrl: ""
+    };
+
+    function loadLogoConfig() {
+        const saved = localStorage.getItem("logoConfig");
+        if (saved) {
+            try {
+                logoConfig = JSON.parse(saved);
+            } catch(e) {}
+        }
+        applyLogoConfig();
+    }
+
+    function applyLogoConfig() {
+        const logoImg = document.getElementById('logoImg');
+        const logoSpan = document.getElementById('logoSpan');
+        const logoArea = document.getElementById('logoArea');
+        
+        if (logoConfig.imgUrl && logoConfig.imgUrl.trim() !== "") {
+            logoImg.src = logoConfig.imgUrl;
+            logoImg.style.display = "block";
+            logoSpan.style.display = "none";
+        } else {
+            logoImg.style.display = "none";
+            logoSpan.style.display = "block";
+        }
+        
+        // 设置点击跳转
+        logoArea.style.cursor = logoConfig.linkUrl ? "pointer" : "default";
+        logoArea.onclick = () => {
+            if (logoConfig.linkUrl) {
+                window.open(logoConfig.linkUrl, "_blank");
+            }
+        };
+    }
+
+    function saveLogoConfig(imgUrl, linkUrl) {
+        logoConfig = { imgUrl: imgUrl || "", linkUrl: linkUrl || "" };
+        localStorage.setItem("logoConfig", JSON.stringify(logoConfig));
+        applyLogoConfig();
+        showToast("✅ Logo 设置已保存", 1500);
+    }
+
+    function resetLogoConfig() {
+        logoConfig = { imgUrl: "", linkUrl: "" };
+        localStorage.removeItem("logoConfig");
+        applyLogoConfig();
+        showToast("🔄 已恢复默认 Logo", 1500);
+    }
 
     function showToast(msg, time = 2500) {
         const toast = document.getElementById('toastMsg');
@@ -635,6 +814,43 @@
         });
     }
 
+    // Logo 设置弹窗
+    function bindLogoSettings() {
+        const settingsBtn = document.getElementById('logoSettingsBtn');
+        const modal = document.getElementById('logoSettingsModal');
+        const closeBtn = document.getElementById('closeLogoModal');
+        const saveBtn = document.getElementById('saveLogoSettings');
+        const resetBtn = document.getElementById('resetLogoSettings');
+        const logoUrlInput = document.getElementById('logoUrlInput');
+        const logoLinkInput = document.getElementById('logoLinkInput');
+        const previewImg = document.getElementById('previewImg');
+
+        settingsBtn.onclick = () => {
+            logoUrlInput.value = logoConfig.imgUrl || "";
+            logoLinkInput.value = logoConfig.linkUrl || "";
+            previewImg.src = logoConfig.imgUrl || "https://picsum.photos/id/20/80/80";
+            modal.style.display = 'flex';
+        };
+
+        logoUrlInput.oninput = () => {
+            previewImg.src = logoUrlInput.value || "https://picsum.photos/id/20/80/80";
+        };
+
+        saveBtn.onclick = () => {
+            saveLogoConfig(logoUrlInput.value, logoLinkInput.value);
+            modal.style.display = 'none';
+        };
+
+        resetBtn.onclick = () => {
+            resetLogoConfig();
+            modal.style.display = 'none';
+        };
+
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
+
     // 删除弹窗
     function bindModal() {
         const modal = document.getElementById('deleteModal');
@@ -689,10 +905,12 @@
 
     // 初始化
     async function init() {
+        loadLogoConfig();
         bindAudioEvents();
         bindUpload();
         bindModeSwitch();
         bindModal();
+        bindLogoSettings();
         bindControls();
         await refreshAndRender();
     }
