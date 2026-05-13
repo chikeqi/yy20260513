@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+fetch('/api/ping')
+  .then(r => r.text())
+  .then(data => document.body.innerHTML = '<pre>' + data + '</pre>');
+</script>
+</body>
+</html>
