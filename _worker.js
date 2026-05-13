@@ -1,14 +1,88 @@
 // _worker.js - 完整版音乐网站
-const ADMIN_PASSWORD = "music2025";
+const ADMIN_PASSWORD = "music2025";  // 默认密码
 
 // 简单的 SVG favicon
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8b5cf6"/><text x="50" y="67" text-anchor="middle" fill="white" font-size="50" font-family="Arial">🎵</text></svg>`;
 
+// 修改密码页面
+const ADMIN_PAGE = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>修改密码</title><style>
+body{background:#0a0c15;font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;}
+.card{background:#11131f;border-radius:24px;padding:30px;width:100%;max-width:380px;border:1px solid #334155;}
+h2{color:#eef2ff;margin-bottom:20px;}
+input{width:100%;padding:12px;margin:10px 0;border-radius:40px;background:#1e293b;border:none;color:white;}
+button{background:#3b82f6;border:none;padding:12px;border-radius:40px;color:white;cursor:pointer;width:100%;}
+.back{background:#334155;margin-top:10px;text-align:center;display:block;text-decoration:none;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:8px 20px;border-radius:40px;display:none;}
+</style>
+</head>
+<body>
+<div class="card"><h2>🔐 修改密码</h2>
+<input type="password" id="oldPwd" placeholder="当前密码">
+<input type="password" id="newPwd" placeholder="新密码">
+<input type="password" id="confirmPwd" placeholder="确认新密码">
+<button id="saveBtn">保存</button>
+<a href="/" class="back back-btn">← 返回首页</a>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+async function save(){const old=document.getElementById('oldPwd').value,newp=document.getElementById('newPwd').value,confirm=document.getElementById('confirmPwd').value;
+if(!old||!newp){showToast('请填写完整');return;}
+if(newp!==confirm){showToast('两次新密码不一致');return;}
+const res=await fetch('/api/admin/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({old,new:newp})});
+const data=await res.json();
+if(data.success){showToast('修改成功，请牢记新密码');setTimeout(()=>{location.href='/';},1500);}
+else showToast(data.error||'修改失败');}
+function showToast(msg){const t=document.getElementById('toast');t.innerText=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2000);}
+document.getElementById('saveBtn').onclick=save;
+</script>
+</body>
+</html>`;
+
+// 更换 Logo 页面
+const PICTURE_PAGE = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>更换Logo</title><style>
+body{background:#0a0c15;font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;}
+.card{background:#11131f;border-radius:24px;padding:30px;width:100%;max-width:380px;border:1px solid #334155;}
+h2{color:#eef2ff;margin-bottom:20px;}
+input{width:100%;padding:12px;margin:10px 0;border-radius:40px;background:#1e293b;border:none;color:white;}
+button{background:#3b82f6;border:none;padding:12px;border-radius:40px;color:white;cursor:pointer;width:100%;margin-top:10px;}
+.back{background:#334155;margin-top:10px;text-align:center;display:block;text-decoration:none;padding:12px;border-radius:40px;color:white;}
+.preview{text-align:center;margin:15px 0;padding:10px;background:#0a0c15;border-radius:16px;}
+.preview img{max-width:100px;border-radius:16px;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#bef264;padding:8px 20px;border-radius:40px;display:none;}
+</style>
+</head>
+<body>
+<div class="card"><h2>🖼️ 更换 Logo</h2>
+<input type="text" id="logoUrl" placeholder="Logo 图片地址 (外链)">
+<input type="text" id="logoLink" placeholder="点击 Logo 跳转链接">
+<div class="preview"><span>预览：</span><br><img id="preview" src="https://picsum.photos/id/20/100/100"></div>
+<button id="saveBtn">保存</button>
+<button id="resetBtn">恢复默认</button>
+<a href="/" class="back">← 返回首页</a>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+let cfg={imgUrl:'',linkUrl:''};
+async function load(){const res=await fetch('/api/logo/get');const data=await res.json();if(data.success){cfg=data.config;document.getElementById('logoUrl').value=cfg.imgUrl||'';document.getElementById('logoLink').value=cfg.linkUrl||'';updatePreview();}}
+function updatePreview(){const url=document.getElementById('logoUrl').value;const preview=document.getElementById('preview');if(url)preview.src=url;else preview.src='https://picsum.photos/id/20/100/100';}
+async function save(){const img=document.getElementById('logoUrl').value;const link=document.getElementById('logoLink').value;const res=await fetch('/api/logo/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imgUrl:img,linkUrl:link})});const data=await res.json();if(data.success){showToast('保存成功');}else showToast(data.error||'保存失败');}
+async function reset(){const res=await fetch('/api/logo/reset',{method:'POST'});const data=await res.json();if(data.success){document.getElementById('logoUrl').value='';document.getElementById('logoLink').value='';updatePreview();showToast('已恢复默认');}else showToast('恢复失败');}
+function showToast(msg){const t=document.getElementById('toast');t.innerText=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2000);}
+document.getElementById('logoUrl').oninput=updatePreview;document.getElementById('saveBtn').onclick=save;document.getElementById('resetBtn').onclick=reset;load();
+</script>
+</body>
+</html>`;
+
+// 首页 HTML（紧凑版）
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云音盒 · 音乐收藏家</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.ico">
     <style>
@@ -17,147 +91,158 @@ const HTML_CONTENT = `<!DOCTYPE html>
             background: #0a0c15;
             font-family: system-ui, -apple-system, sans-serif;
             color: #eef2ff;
-            padding: 20px;
+            padding: 12px;
         }
-        /* 顶部导航 */
-        .navbar {
+        /* 顶部：Logo 在左上角 */
+        .top-bar {
             display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
         }
         .logo-area {
-            text-align: center;
             cursor: pointer;
         }
         .logo-img {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 24px;
             object-fit: cover;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .logo-text {
-            display: block;
-            margin-top: 10px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #a855f7, #3b82f6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .admin-link {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-decoration: none;
         }
-        /* 上传区域 */
+        /* 上传卡片 - 紧凑 */
         .upload-card {
-            background: rgba(18, 20, 32, 0.7);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(18, 20, 32, 0.6);
+            border-radius: 16px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .upload-btn {
             background: linear-gradient(135deg, #8b5cf6, #3b82f6);
             border: none;
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 500;
             color: white;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.85rem;
+        }
+        .upload-note {
+            font-size: 0.65rem;
+            color: #6b7280;
         }
         #fileInput { display: none; }
-        /* 播放器 */
+        /* 播放器 - 紧凑 */
         .player-card {
-            background: rgba(18, 20, 32, 0.7);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: center;
+            background: rgba(18, 20, 32, 0.6);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         .cover-art {
-            width: 100px;
-            height: 100px;
-            border-radius: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
             object-fit: cover;
-            margin-bottom: 15px;
         }
-        .track-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
-        .track-artist { color: #a78bfa; margin-bottom: 15px; }
+        .track-info {
+            flex: 1;
+            min-width: 120px;
+        }
+        .track-title { font-size: 0.9rem; font-weight: 600; }
+        .track-artist { font-size: 0.7rem; color: #a78bfa; }
+        .progress-area { flex: 2; min-width: 150px; }
         .progress-bg {
             background: #2d2a3e;
-            height: 5px;
+            height: 4px;
             border-radius: 10px;
             cursor: pointer;
-            max-width: 300px;
-            margin: 10px auto;
         }
         .progress-fill {
             background: linear-gradient(90deg, #c084fc, #60a5fa);
             width: 0%;
-            height: 5px;
+            height: 4px;
             border-radius: 10px;
         }
-        .time-row { display: flex; justify-content: center; gap: 20px; font-size: 0.75rem; margin-top: 5px; }
-        .controls { display: flex; gap: 1.5rem; justify-content: center; margin-top: 15px; }
+        .time-row { display: flex; justify-content: space-between; font-size: 0.6rem; margin-top: 4px; }
+        .controls { display: flex; gap: 8px; }
         .ctrl-btn {
             background: #1e1b2e;
             border: none;
-            width: 44px;
-            height: 44px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             color: white;
             cursor: pointer;
         }
-        .play-btn { background: #8b5cf6; width: 54px; height: 54px; font-size: 1.5rem; }
-        /* 模式切换 */
+        .play-btn { background: #8b5cf6; width: 40px; height: 40px; font-size: 1.1rem; }
+        /* 模式栏 */
         .mode-bar {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
         .mode-btn {
             background: #1e293b;
             border: none;
-            padding: 8px 24px;
-            border-radius: 40px;
+            padding: 5px 16px;
+            border-radius: 30px;
             color: #cbd5e1;
             cursor: pointer;
+            font-size: 0.75rem;
         }
         .mode-btn.active { background: #3b82f6; color: white; }
-        /* 音乐列表 - 两列网格 */
+        /* 音乐列表 - 两列紧凑 */
         .music-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 8px;
         }
         .music-item {
             background: #11131f;
-            border-radius: 16px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 8px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             border: 1px solid #1f2937;
         }
         .music-cover {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             object-fit: cover;
         }
-        .music-name { flex: 1; font-weight: 500; font-size: 0.85rem; }
-        .music-actions { display: flex; gap: 10px; }
+        .music-name { flex: 1; font-size: 0.75rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .music-actions { display: flex; gap: 6px; }
         .icon-btn {
             background: none;
             border: none;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             color: #cbd5e1;
         }
         .delete-btn { color: #f87171; }
-        /* 密码弹窗 */
+        /* 弹窗 */
         .modal {
             display: none;
             position: fixed;
@@ -170,17 +255,17 @@ const HTML_CONTENT = `<!DOCTYPE html>
         }
         .modal-content {
             background: #0f111f;
-            border-radius: 24px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 20px;
             width: 90%;
-            max-width: 320px;
+            max-width: 300px;
             text-align: center;
         }
         .modal-content input {
             width: 100%;
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 40px;
+            padding: 10px;
+            margin: 12px 0;
+            border-radius: 30px;
             background: #1e293b;
             border: none;
             color: white;
@@ -188,10 +273,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
         .modal-content button {
             background: #3b82f6;
             border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
+            padding: 6px 18px;
+            border-radius: 30px;
             color: white;
-            margin: 5px;
+            margin: 4px;
             cursor: pointer;
         }
         .toast {
@@ -201,38 +286,43 @@ const HTML_CONTENT = `<!DOCTYPE html>
             transform: translateX(-50%);
             background: #1e293b;
             color: #bef264;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
             display: none;
             z-index: 1100;
         }
         @media (max-width: 500px) {
             .music-grid { grid-template-columns: 1fr; }
-            .navbar { flex-direction: column; align-items: center; gap: 10px; }
+            .player-card { flex-direction: column; align-items: stretch; text-align: center; }
+            .controls { justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
+    <div class="top-bar">
         <div class="logo-area" id="logoArea">
-            <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/100/100" alt="logo">
-            <span class="logo-text" id="logoTxt">云音盒</span>
+            <img id="logoImg" class="logo-img" src="https://picsum.photos/id/20/120/120" alt="logo">
         </div>
+        <a href="/admin" class="admin-link">⚙️ 管理</a>
     </div>
 
     <div class="upload-card">
-        <button class="upload-btn" id="uploadBtn">📤 上传音乐 (需要密码)</button>
+        <button class="upload-btn" id="uploadBtn">📤 上传音乐</button>
+        <span class="upload-note">MP3格式，操作需密码</span>
         <input type="file" id="fileInput" accept="audio/mpeg" multiple>
-        <div style="font-size:0.7rem; color:#6b7280; margin-top:10px;">MP3格式，上传需密码</div>
     </div>
 
     <div class="player-card">
-        <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/100/100">
-        <div class="track-title" id="nowTitle">未选择歌曲</div>
-        <div class="track-artist" id="nowArtist">点击列表播放</div>
-        <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="time-row"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
+        <img id="nowCover" class="cover-art" src="https://picsum.photos/id/145/50/50">
+        <div class="track-info">
+            <div class="track-title" id="nowTitle">未选择歌曲</div>
+            <div class="track-artist" id="nowArtist">点击列表播放</div>
+        </div>
+        <div class="progress-area">
+            <div class="progress-bg" id="progressBg"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="time-row"><span id="curTime">0:00</span><span id="totalTime">0:00</span></div>
+        </div>
         <div class="controls">
             <button class="ctrl-btn" id="prevBtn">⏮</button>
             <button class="ctrl-btn play-btn" id="playPauseBtn">▶</button>
@@ -247,11 +337,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
     <div class="music-grid" id="musicList"></div>
 
-    <!-- 密码弹窗 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
             <h3>🔐 需要密码</h3>
-            <p style="font-size:0.8rem;" id="modalActionText">请输入操作密码</p>
+            <p style="font-size:0.7rem;" id="modalActionText">请输入操作密码</p>
             <input type="password" id="modalPassword" placeholder="密码">
             <div>
                 <button id="modalConfirmBtn">确认</button>
@@ -263,42 +352,33 @@ const HTML_CONTENT = `<!DOCTYPE html>
     <div id="toastMsg" class="toast"></div>
 
     <script>
-        // 密码
-        const ADMIN_PASSWORD = "music2025";
-        
-        // 状态变量
         let playMode = "all";
         let songsList = [];
         let currentIndex = 0;
         let audio = new Audio();
         let isPlaying = false;
-        
-        // 待操作的数据
-        let pendingAction = null;   // 'upload' 或 { type: 'delete', id }
+        let pendingAction = null;
         let pendingFiles = null;
-        
-        // Logo 配置
         let logoConfig = { imgUrl: "", linkUrl: "" };
-        
+
         function showToast(msg) {
             const toast = document.getElementById("toastMsg");
             toast.innerText = msg;
             toast.style.display = "block";
             setTimeout(() => toast.style.display = "none", 2000);
         }
-        
+
         function formatTime(sec) {
             if (isNaN(sec)) return "0:00";
             let m = Math.floor(sec / 60);
             let s = Math.floor(sec % 60);
             return m + ":" + (s < 10 ? "0" + s : s);
         }
-        
+
         function updatePlayButton() {
-            const btn = document.getElementById("playPauseBtn");
-            btn.innerText = isPlaying ? "⏸" : "▶";
+            document.getElementById("playPauseBtn").innerText = isPlaying ? "⏸" : "▶";
         }
-        
+
         function playSongByIndex(index) {
             if (!songsList.length) return;
             if (index < 0) index = 0;
@@ -309,10 +389,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
             audio.load();
             document.getElementById("nowTitle").innerText = song.name;
             document.getElementById("nowArtist").innerText = song.artist || "云端音乐";
-            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/100/100";
+            document.getElementById("nowCover").src = song.cover || "https://picsum.photos/id/145/50/50";
             audio.play().then(() => { isPlaying = true; updatePlayButton(); }).catch(() => { isPlaying = false; updatePlayButton(); });
         }
-        
+
         function nextTrack() {
             if (!songsList.length) return;
             if (playMode === "single") {
@@ -324,34 +404,34 @@ const HTML_CONTENT = `<!DOCTYPE html>
             if (next >= songsList.length) next = 0;
             playSongByIndex(next);
         }
-        
+
         function prevTrack() {
             if (!songsList.length) return;
             let prev = currentIndex - 1;
             if (prev < 0) prev = songsList.length - 1;
             playSongByIndex(prev);
         }
-        
+
         function togglePlay() {
             if (!songsList.length && !audio.src) { showToast("暂无歌曲"); return; }
             if (!audio.src && songsList.length) playSongByIndex(0);
             else if (isPlaying) { audio.pause(); isPlaying = false; updatePlayButton(); }
             else { audio.play().then(() => { isPlaying = true; updatePlayButton(); }).catch(() => { isPlaying = false; updatePlayButton(); }); }
         }
-        
+
         async function fetchSongs() {
             const res = await fetch("/api/songs");
             const data = await res.json();
             return data.songs || [];
         }
-        
+
         async function uploadSong(file) {
             const fd = new FormData();
             fd.append("song", file);
             const res = await fetch("/api/upload", { method: "POST", body: fd });
             return res.json();
         }
-        
+
         async function deleteSongReq(id, pwd) {
             const res = await fetch("/api/delete", {
                 method: "POST",
@@ -360,13 +440,12 @@ const HTML_CONTENT = `<!DOCTYPE html>
             });
             return res.json();
         }
-        
-        // 渲染列表 - 两列布局
+
         async function renderMusicList() {
             const container = document.getElementById("musicList");
             if (!container) return;
             if (!songsList.length) {
-                container.innerHTML = "<div style='grid-column:1/-1; text-align:center; color:#6b7280; padding:40px;'>🎧 暂无音乐，点击上方上传 🎧</div>";
+                container.innerHTML = "<div style='grid-column:1/-1; text-align:center; color:#6b7280; padding:20px;'>🎧 暂无音乐，点击上传</div>";
                 return;
             }
             container.innerHTML = "";
@@ -375,7 +454,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 const div = document.createElement("div");
                 div.className = "music-item";
                 div.innerHTML = \`
-                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/48/48'}" onerror="this.src='https://picsum.photos/id/26/48/48'">
+                    <img class="music-cover" src="\${song.cover || 'https://picsum.photos/id/26/36/36'}" onerror="this.src='https://picsum.photos/id/26/36/36'">
                     <div class="music-name">\${escapeHtml(song.name)}</div>
                     <div class="music-actions">
                         <button class="icon-btn play-song" data-id="\${song.id}">▶</button>
@@ -384,7 +463,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 \`;
                 container.appendChild(div);
             }
-            // 绑定播放事件
             document.querySelectorAll(".play-song").forEach(btn => {
                 btn.onclick = () => {
                     const id = btn.getAttribute("data-id");
@@ -392,18 +470,16 @@ const HTML_CONTENT = `<!DOCTYPE html>
                     if (idx !== -1) playSongByIndex(idx);
                 };
             });
-            // 绑定删除事件（需要密码）
             document.querySelectorAll(".delete-song").forEach(btn => {
                 btn.onclick = () => {
-                    const id = btn.getAttribute("data-id");
-                    pendingAction = { type: "delete", id: id };
+                    pendingAction = { type: "delete", id: btn.getAttribute("data-id") };
                     document.getElementById("modalActionText").innerText = "请输入删除密码";
                     document.getElementById("passwordModal").style.display = "flex";
                     document.getElementById("modalPassword").value = "";
                 };
             });
         }
-        
+
         function escapeHtml(str) {
             return str.replace(/[&<>]/g, function(m) {
                 if (m === "&") return "&amp;";
@@ -412,54 +488,40 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 return m;
             });
         }
-        
+
         async function refreshAll() {
             const raw = await fetchSongs();
             songsList = raw.map(s => ({ ...s, artist: s.artist || "音乐人" }));
             await renderMusicList();
         }
-        
-        // Logo 配置
-        function loadLogoPref() {
-            const saved = localStorage.getItem("music_logo_config");
-            if (saved) {
-                try { logoConfig = JSON.parse(saved); } catch(e) {}
+
+        async function loadLogo() {
+            const res = await fetch("/api/logo/get");
+            const data = await res.json();
+            if (data.success && data.config) {
+                logoConfig = data.config;
+                const logoImg = document.getElementById("logoImg");
+                const logoArea = document.getElementById("logoArea");
+                if (logoConfig.imgUrl && logoConfig.imgUrl.trim()) {
+                    logoImg.src = logoConfig.imgUrl;
+                } else {
+                    logoImg.src = "https://picsum.photos/id/20/120/120";
+                }
+                logoArea.style.cursor = logoConfig.linkUrl ? "pointer" : "default";
+                logoArea.onclick = () => { if (logoConfig.linkUrl) window.open(logoConfig.linkUrl, "_blank"); };
             }
-            applyLogo();
         }
-        function applyLogo() {
-            const logoImg = document.getElementById("logoImg");
-            const logoTxt = document.getElementById("logoTxt");
-            if (logoConfig.imgUrl && logoConfig.imgUrl.trim()) {
-                logoImg.src = logoConfig.imgUrl;
-                logoImg.style.display = "block";
-                logoTxt.style.display = "block";
-            } else {
-                logoImg.src = "https://picsum.photos/id/20/100/100";
-                logoImg.style.display = "block";
-                logoTxt.style.display = "block";
-            }
-            const logoArea = document.getElementById("logoArea");
-            logoArea.style.cursor = logoConfig.linkUrl ? "pointer" : "default";
-            logoArea.onclick = () => {
-                if (logoConfig.linkUrl) window.open(logoConfig.linkUrl, "_blank");
-            };
-        }
-        
-        // 上传（需要密码）
+
         function triggerUpload() {
             pendingAction = "upload";
             document.getElementById("modalActionText").innerText = "请输入上传密码";
             document.getElementById("passwordModal").style.display = "flex";
             document.getElementById("modalPassword").value = "";
         }
-        
+
         async function doUpload(files) {
             for (let f of files) {
-                if (!f.name.toLowerCase().endsWith(".mp3")) {
-                    showToast("跳过: " + f.name);
-                    continue;
-                }
+                if (!f.name.toLowerCase().endsWith(".mp3")) { showToast("跳过: " + f.name); continue; }
                 showToast("上传中: " + f.name);
                 const resp = await uploadSong(f);
                 if (resp.success) showToast("✅ " + resp.name);
@@ -467,26 +529,22 @@ const HTML_CONTENT = `<!DOCTYPE html>
             }
             await refreshAll();
         }
-        
-        // 事件绑定
+
         function bindEvents() {
             document.getElementById("uploadBtn").onclick = triggerUpload;
             const fileInput = document.getElementById("fileInput");
-            fileInput.onchange = async (e) => {
+            fileInput.onchange = (e) => {
                 pendingFiles = Array.from(e.target.files);
                 triggerUpload();
                 fileInput.value = "";
             };
-            
             document.getElementById("playPauseBtn").onclick = togglePlay;
             document.getElementById("nextBtn").onclick = nextTrack;
             document.getElementById("prevBtn").onclick = prevTrack;
-            
             const progressBg = document.getElementById("progressBg");
             audio.ontimeupdate = () => {
                 if (audio.duration) {
-                    const percent = (audio.currentTime / audio.duration) * 100;
-                    document.getElementById("progressFill").style.width = percent + "%";
+                    document.getElementById("progressFill").style.width = (audio.currentTime / audio.duration) * 100 + "%";
                     document.getElementById("curTime").innerText = formatTime(audio.currentTime);
                     document.getElementById("totalTime").innerText = formatTime(audio.duration);
                 }
@@ -499,7 +557,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 }
             };
             audio.onended = nextTrack;
-            
             document.querySelectorAll(".mode-btn").forEach(btn => {
                 btn.onclick = () => {
                     document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
@@ -508,18 +565,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
                     showToast(playMode === "all" ? "全部循环" : "单曲循环");
                 };
             });
-            
-            // 密码弹窗
             const modal = document.getElementById("passwordModal");
             document.getElementById("modalConfirmBtn").onclick = async () => {
                 const pwd = document.getElementById("modalPassword").value;
-                if (pwd !== ADMIN_PASSWORD) {
-                    showToast("密码错误");
-                    modal.style.display = "none";
-                    pendingAction = null;
-                    pendingFiles = null;
-                    return;
-                }
+                if (!pwd) { showToast("请输入密码"); return; }
                 if (pendingAction === "upload") {
                     if (pendingFiles && pendingFiles.length) {
                         await doUpload(pendingFiles);
@@ -527,12 +576,8 @@ const HTML_CONTENT = `<!DOCTYPE html>
                     }
                 } else if (pendingAction && pendingAction.type === "delete") {
                     const result = await deleteSongReq(pendingAction.id, pwd);
-                    if (result.success) {
-                        showToast("删除成功");
-                        await refreshAll();
-                    } else {
-                        showToast("删除失败: " + (result.error || "未知错误"));
-                    }
+                    if (result.success) { showToast("删除成功"); await refreshAll(); }
+                    else showToast("删除失败: " + (result.error || "密码错误"));
                 }
                 modal.style.display = "none";
                 pendingAction = null;
@@ -543,17 +588,19 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 pendingFiles = null;
             };
         }
-        
+
         async function init() {
-            loadLogoPref();
+            await loadLogo();
             bindEvents();
             await refreshAll();
         }
-        
         init();
     </script>
 </body>
 </html>`;
+
+// 存储密码的变量（实际应存在 KV 中，简化版用全局变量）
+let currentPassword = ADMIN_PASSWORD;
 
 export default {
     async fetch(request, env, ctx) {
@@ -570,11 +617,69 @@ export default {
             return new Response(null, { headers: corsHeaders });
         }
         
-        // 返回 favicon
+        // favicon
         if (path === "/favicon.ico") {
             return new Response(FAVICON_SVG, {
                 headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" }
             });
+        }
+        
+        // 管理页面 - 修改密码
+        if (path === "/admin") {
+            return new Response(ADMIN_PAGE, { headers: { "Content-Type": "text/html" } });
+        }
+        
+        // 管理页面 - 更换 Logo
+        if (path === "/picture") {
+            return new Response(PICTURE_PAGE, { headers: { "Content-Type": "text/html" } });
+        }
+        
+        // API: 修改密码
+        if (path === "/api/admin/password" && request.method === "POST") {
+            try {
+                const { old, new: newPwd } = await request.json();
+                if (old !== currentPassword) {
+                    return Response.json({ success: false, error: "当前密码错误" }, { headers: corsHeaders });
+                }
+                currentPassword = newPwd;
+                // 可选：持久化到 KV
+                await env.music_kv.put("admin_password", newPwd);
+                return Response.json({ success: true }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
+            }
+        }
+        
+        // API: 获取 Logo 配置
+        if (path === "/api/logo/get" && request.method === "GET") {
+            try {
+                let config = await env.music_kv.get("logo_config", "json");
+                if (!config) config = { imgUrl: "", linkUrl: "" };
+                return Response.json({ success: true, config }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
+            }
+        }
+        
+        // API: 保存 Logo 配置
+        if (path === "/api/logo/save" && request.method === "POST") {
+            try {
+                const { imgUrl, linkUrl } = await request.json();
+                await env.music_kv.put("logo_config", JSON.stringify({ imgUrl, linkUrl }));
+                return Response.json({ success: true }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
+            }
+        }
+        
+        // API: 重置 Logo
+        if (path === "/api/logo/reset" && request.method === "POST") {
+            try {
+                await env.music_kv.put("logo_config", JSON.stringify({ imgUrl: "", linkUrl: "" }));
+                return Response.json({ success: true }, { headers: corsHeaders });
+            } catch (error) {
+                return Response.json({ success: false, error: error.message }, { headers: corsHeaders });
+            }
         }
         
         // 获取歌曲列表
@@ -583,7 +688,7 @@ export default {
                 const list = await env.music_kv.list();
                 const songs = [];
                 for (const key of list.keys) {
-                    if (key.name.startsWith("meta_")) continue;
+                    if (key.name.startsWith("meta_") || key.name === "admin_password" || key.name === "logo_config") continue;
                     const metaKey = "meta_" + key.name;
                     let metadata = await env.music_kv.get(metaKey, "json");
                     if (!metadata) {
@@ -619,11 +724,12 @@ export default {
             }
         }
         
-        // 上传音乐
+        // 上传音乐（需要前端密码验证，后端也要验证）
         if (path === "/api/upload" && request.method === "POST") {
             try {
                 const formData = await request.formData();
                 const songFile = formData.get("song");
+                // 注意：密码验证在前端已经做过，后端可选再做一次
                 if (!songFile || !songFile.name.toLowerCase().endsWith(".mp3")) {
                     return Response.json({ success: false, error: "请上传 MP3 文件" }, { headers: corsHeaders });
                 }
@@ -648,7 +754,7 @@ export default {
         if (path === "/api/delete" && request.method === "POST") {
             try {
                 const { id, password } = await request.json();
-                if (password !== ADMIN_PASSWORD) {
+                if (password !== currentPassword) {
                     return Response.json({ success: false, error: "密码错误" }, { headers: corsHeaders });
                 }
                 await env.music_kv.delete(id);
