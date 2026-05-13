@@ -1,5 +1,5 @@
 // _worker.js - 完整版音乐网站
-const ADMIN_PASSWORD = "music2025";
+const ADMIN_PASSWORD = "ww1234";
 
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8b5cf6"/><text x="50" y="67" text-anchor="middle" fill="white" font-size="50" font-family="Arial">🎵</text></svg>`;
 
